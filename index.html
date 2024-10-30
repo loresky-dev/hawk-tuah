@@ -1,0 +1,888 @@
+<html><head><base href="." />
+<title>WEBHOOK</title>
+<link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png">
+<style>
+:root {
+  --dark-primary: #36393f;
+  --dark-secondary: #2f3136;
+  --dark-tertiary: #202225;
+  --brand: #5865F2;
+  --brand-hover: #4752c4;
+  --text: #dcddde;
+  --text-muted: #72767d;
+  --success: #3ba55c;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+body {
+  background: var(--dark-tertiary);
+  color: var(--text);
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 300px;
+  background: var(--dark-secondary);
+  padding: 20px;
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.main-content {
+  flex: 1;
+  background: var(--dark-primary);
+  padding: 20px;
+}
+
+.webhook-input {
+  width: 100%;
+  background: var(--dark-tertiary);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.webhook-info {
+  background: var(--dark-tertiary);
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.webhook-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.preview-area {
+  background: var(--dark-tertiary);
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.preview-area h3 {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+.message-input {
+  width: 100%;
+  min-height: 100px;
+  background: var(--dark-tertiary);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  resize: vertical;
+  font-family: 'Whitney', sans-serif;
+}
+
+.button {
+  background: var(--brand);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.button:hover {
+  background: var(--brand-hover);
+}
+
+.preview-message {
+  background: var(--dark-primary);
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-top: 20px;
+  font-size: 16px;
+  line-height: 1.375;
+  display: none;
+}
+
+.preview-message.active {
+  display: block;
+}
+
+.embed-preview {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: var(--dark-tertiary);
+  border-left: 4px solid;
+}
+
+.embed-title {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.embed-author {
+  color: #ffffff;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.embed-description {
+  color: var(--text);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.embed-footer {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.embed-thumbnail img, .embed-image img {
+  max-width: 100%;
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+.embed-field {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.embed-fields {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.embed-field.inline {
+  display: inline-block;
+  width: calc(33.33% - 8px);
+}
+
+.embed-timestamp {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.webhook-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.webhook-header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.webhook-name {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.webhook-header::after {
+  content: attr(data-timestamp);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin-left: 8px;
+}
+
+#previewContent {
+  color: #dcddde;
+  font-size: 16px;
+  line-height: 1.375;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.spoiler {
+  background: #202225;
+  padding: 0 2px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.spoiler:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.quote {
+  border-left: 4px solid var(--text-muted);
+  padding-left: 8px;
+  margin: 4px 0;
+}
+
+#previewContent code {
+  background: rgba(0,0,0,0.3);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.status {
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 10px;
+  display: none;
+}
+
+.status.success {
+  background: var(--success);
+  display: block;
+}
+
+.status.error {
+  background: #ed4245;
+  display: block;
+}
+
+.advanced-options {
+  margin-top: 20px;
+  padding: 15px;
+  background: var(--dark-tertiary);
+  border-radius: 4px;
+}
+
+.option-row {
+  margin-bottom: 10px;
+}
+
+.option-row label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-muted);
+}
+
+.option-toggle {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.option-toggle label {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.markdown-guide {
+  background: var(--dark-tertiary);
+  padding: 15px;
+  border-radius: 4px;
+  margin-top: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.markdown-item {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.markdown-item:last-child {
+  border-bottom: none;
+}
+
+@keyframes rainbow {
+  0% { color: #ff0000; }
+  20% { color: #ff9900; }
+  40% { color: #ffff00; }
+  60% { color: #33ff00; }
+  80% { color: #0099ff; }
+  100% { color: #ff00ff; }
+}
+
+.rainbow-text {
+  animation: rainbow 5s linear infinite;
+}
+
+.markdown-example {
+  background: var(--dark-primary);
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 5px;
+  font-family: monospace;
+}
+
+.embed-builder {
+  background: var(--dark-tertiary);
+  padding: 15px;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+
+.embed-preview {
+  background: var(--dark-primary);
+  padding: 15px;
+  border-radius: 4px;
+  margin-top: 10px;
+  border-left: 4px solid var(--brand);
+}
+
+.color-picker {
+  width: 100%;
+  height: 40px;
+  background: var(--dark-tertiary);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  padding: 5px;
+  color: var(--text);
+}
+
+.message-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.message-column {
+  flex: 1;
+}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <h2>Webhook Configuration</h2>
+  <input type="text" class="webhook-input" placeholder="Enter webhook URL" id="webhookUrl">
+  
+  <div class="webhook-info">
+    <img src="https://cdn.discordapp.com/embed/avatars/0.png" class="webhook-avatar" id="webhookAvatar">
+    <div id="webhookName">Not Connected</div>
+  </div>
+  
+  <div class="advanced-options">
+    <div class="option-row">
+      <label>Custom Username</label>
+      <input type="text" class="webhook-input" id="customUsername" placeholder="Override webhook name">
+    </div>
+    <div class="option-row">
+      <label>Custom Avatar URL</label>
+      <input type="text" class="webhook-input" id="customAvatar" placeholder="Override avatar URL">
+    </div>
+    <div class="option-row">
+      <label>Thread Name (Optional)</label>
+      <input type="text" class="webhook-input" id="threadName" placeholder="Create new thread">
+    </div>
+
+    <div class="option-toggle">
+      <input type="checkbox" id="ttsEnabled">
+      <label>Text-to-Speech</label>
+    </div>
+
+    <div class="option-toggle">
+      <input type="checkbox" id="allowMentions" checked>
+      <label>Allow Mentions</label>
+    </div>
+  </div>
+  
+  <div class="markdown-guide">
+    <h3>Markdown Guide</h3>
+    <div class="markdown-item">
+      <strong>Bold</strong>
+      <div class="markdown-example">**bold text**</div>
+    </div>
+    <div class="markdown-item">
+      <em>Italic</em>
+      <div class="markdown-example">*</em>italic text*<em></div>
+    </div>
+    <div class="markdown-item">
+      <u>Underline</u>
+      <div class="markdown-example">__underline__</div>
+    </div>
+    <div class="markdown-item">
+      <span style="text-decoration: line-through;">Strikethrough</span>
+      <div class="markdown-example">~~strikethrough~~</div>
+    </div>
+    <div class="markdown-item">
+      <code>Code Block</code>
+      <div class="markdown-example">```code block```</div>
+    </div>
+    <div class="markdown-item">
+      <span>Spoiler</span>
+      <div class="markdown-example">||spoiler text||</div>
+    </div>
+    <div class="markdown-item">
+      <span>Quote</span>
+      <div class="markdown-example">> quote text</div>
+    </div>
+    <div class="markdown-item">
+      <span>Inline Code</span>
+      <div class="markdown-example">`inline code`</div>
+    </div>
+    <div class="markdown-item">
+      <span>Headers</span>
+      <div class="markdown-example"># Large Header
+## Medium Header
+### Small Header</div>
+    </div>
+    <div class="markdown-item">
+      <span>Bullet List</span>
+      <div class="markdown-example">• First item
+• Second item</div>
+    </div>
+  </div>
+</div>
+
+<div class="main-content">
+  <div class="preview-area">
+    <h3>Message Preview</h3>
+    <!-- Message 1 Preview -->
+    <div class="preview-message" id="preview1">
+      <div class="webhook-header">
+        <img src="https://cdn.discordapp.com/embed/avatars/0.png" id="previewAvatar1">
+        <div class="webhook-name" id="previewName1">Webhook</div>
+      </div>
+      <div id="previewContent1">First message will appear here...</div>
+    </div>
+    
+    <!-- Message 2 Preview -->
+    <div class="preview-message" id="preview2">
+      <div class="webhook-header">
+        <img src="https://cdn.discordapp.com/embed/avatars/0.png" id="previewAvatar2">
+        <div class="webhook-name" id="previewName2">Webhook</div>
+      </div>
+      <div id="previewContent2">Second message will appear here...</div>
+      <!-- Embed Preview -->
+      <div class="embed-preview" id="embedPreview">
+        <div class="embed-author" id="previewEmbedAuthor"></div>
+        <div class="embed-title" id="previewEmbedTitle"></div>
+        <div class="embed-description" id="previewEmbedDescription"></div>
+        <div class="embed-thumbnail" id="previewEmbedThumbnail"></div>
+        <div class="embed-image" id="previewEmbedImage"></div>
+        <div class="embed-fields" id="previewEmbedFields"></div>
+        <div class="embed-timestamp" id="previewEmbedTimestamp"></div>
+        <div class="embed-footer" id="previewEmbedFooter"></div>
+      </div>
+    </div>
+    
+    <!-- Message 3 Preview -->
+    <div class="preview-message" id="preview3">
+      <div class="webhook-header">
+        <img src="https://cdn.discordapp.com/embed/avatars/0.png" id="previewAvatar3">
+        <div class="webhook-name" id="previewName3">Webhook</div>
+      </div>
+      <div id="previewContent3">Third message will appear here...</div>
+    </div>
+  </div>
+  
+  <div class="message-container">
+    <div class="message-column">
+      <h3>Message 1</h3>
+      <textarea class="message-input" placeholder="Enter your first message here..." id="messageInput1"></textarea>
+    </div>
+    <div class="message-column">
+      <h3>Message 2</h3>
+      <textarea class="message-input" placeholder="Enter your second message here..." id="messageInput2"></textarea>
+    </div>
+    <div class="message-column">
+      <h3>Message 3</h3>
+      <textarea class="message-input" placeholder="Enter your third message here..." id="messageInput3"></textarea>
+    </div>
+  </div>
+
+  <div class="message-options">
+    <label>
+      <input type="checkbox" id="rainbowEffect"> Enable Rainbow Text Effect
+    </label>
+  </div>
+
+  <div class="embed-builder">
+    <h3>Embed Builder</h3>
+    <input type="text" class="webhook-input" placeholder="Embed Title" id="embedTitle">
+    <textarea class="message-input" placeholder="Embed Description" id="embedDescription"></textarea>
+    <input type="text" class="webhook-input" placeholder="Author Name" id="embedAuthor">
+    <input type="text" class="webhook-input" id="embedAuthorIcon" placeholder="Author Icon URL">
+    <input type="text" class="webhook-input" id="embedAuthorUrl" placeholder="Author URL">
+    <input type="text" class="webhook-input" placeholder="Footer Text" id="embedFooter">
+    <input type="text" class="webhook-input" id="embedFooterIcon" placeholder="Footer Icon URL">
+    <input type="text" class="webhook-input" placeholder="Embed URL" id="embedUrl">
+    <input type="text" class="webhook-input" placeholder="Thumbnail URL" id="embedThumbnail">
+    <input type="text" class="webhook-input" placeholder="Image URL" id="embedImage">
+    <div class="option-row">
+      <label>Timestamp</label>
+      <input type="datetime-local" class="webhook-input" id="embedTimestamp">
+    </div>
+    <div class="option-row">
+      <label>Fields</label>
+      <div id="embedFields">
+        <div class="embed-field">
+          <input type="text" class="webhook-input" placeholder="Field Name">
+          <input type="text" class="webhook-input" placeholder="Field Value">
+          <input type="checkbox" id="inlineField"> Inline
+        </div>
+      </div>
+      <button class="button" onclick="addEmbedField()">Add Field</button>
+    </div>
+    <input type="color" class="color-picker" id="embedColor" value="#5865F2">
+  </div>
+
+  <button class="button" onclick="sendWebhook()">Send Messages</button>
+  <div id="status" class="status"></div>
+</div>
+
+<script>
+let webhookData = {
+  name: null,
+  avatar: null
+};
+
+function parseMarkdown(text) {
+  return text
+    // Headers
+    .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
+    // Bold
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Underline
+    .replace(/__(.*?)__/g, '<u>$1</u>')
+    // Strikethrough
+    .replace(/~~(.*?)~~/g, '<span style="text-decoration: line-through;">$1</span>')
+    // Code blocks
+    .replace(/```(.*?)```/g, '<code>$1</code>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // Bullet points
+    .replace(/^• (.*?)$/gm, '<li>$1</li>')
+    // Spoiler
+    .replace(/\|\|(.*?)\|\|/g, '<span class="spoiler">$1</span>')
+    // Quote
+    .replace(/^> (.*)$/gm, '<div class="quote">$1</div>');
+}
+
+document.getElementById('webhookUrl').addEventListener('input', debounce(fetchWebhookInfo, 500));
+document.getElementById('messageInput1').addEventListener('input', updatePreview);
+document.getElementById('messageInput2').addEventListener('input', updatePreview);
+document.getElementById('messageInput3').addEventListener('input', updatePreview);
+document.getElementById('customUsername').addEventListener('input', updatePreview);
+document.getElementById('customAvatar').addEventListener('input', updatePreview);
+document.getElementById('embedTitle').addEventListener('input', updatePreview);
+document.getElementById('embedDescription').addEventListener('input', updatePreview);
+document.getElementById('embedAuthor').addEventListener('input', updatePreview);
+document.getElementById('embedFooter').addEventListener('input', updatePreview);
+document.getElementById('embedColor').addEventListener('input', updatePreview);
+document.getElementById('embedUrl').addEventListener('input', updatePreview);
+document.getElementById('embedThumbnail').addEventListener('input', updatePreview);
+document.getElementById('embedImage').addEventListener('input', updatePreview);
+document.getElementById('embedTimestamp').addEventListener('input', updatePreview);
+
+function addEmbedField() {
+  const fieldsDiv = document.getElementById('embedFields');
+  const newField = document.createElement('div');
+  newField.className = 'embed-field';
+  newField.innerHTML = `
+    <input type="text" class="webhook-input" placeholder="Field Name">
+    <input type="text" class="webhook-input" placeholder="Field Value">
+    <input type="checkbox"> Inline
+  `;
+  fieldsDiv.appendChild(newField);
+  updatePreview();
+}
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+async function fetchWebhookInfo() {
+  const webhookUrl = document.getElementById('webhookUrl').value;
+  if (!webhookUrl.includes('discord.com/api/webhooks')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(webhookUrl);
+    const data = await response.json();
+    
+    webhookData.name = data.name;
+    webhookData.avatar = data.avatar ? 
+      `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png` :
+      'https://cdn.discordapp.com/embed/avatars/0.png';
+    
+    document.getElementById('webhookAvatar').src = webhookData.avatar;
+    document.getElementById('webhookName').textContent = webhookData.name;
+    
+    updatePreview();
+  } catch (error) {
+    console.error('Error fetching webhook:', error);
+  }
+}
+
+function updatePreview() {
+  const message1 = document.getElementById('messageInput1').value;
+  const message2 = document.getElementById('messageInput2').value;
+  const message3 = document.getElementById('messageInput3').value;
+  const customUsername = document.getElementById('customUsername').value;
+  const customAvatar = document.getElementById('customAvatar').value;
+  
+  // Embed data
+  const embedTitle = document.getElementById('embedTitle').value;
+  const embedDescription = document.getElementById('embedDescription').value;
+  const embedAuthor = document.getElementById('embedAuthor').value;
+  const embedFooter = document.getElementById('embedFooter').value;
+  const embedColor = document.getElementById('embedColor').value;
+  
+  // Update all preview sections
+  const previewAvatar = customAvatar || webhookData.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+  const previewName = customUsername || webhookData.name || 'Webhook';
+  
+  // Show/hide and update messages based on content
+  ['1', '2', '3'].forEach(num => {
+    const content = document.getElementById(`messageInput${num}`).value;
+    const preview = document.getElementById(`preview${num}`);
+    const previewContent = document.getElementById(`previewContent${num}`);
+    
+    if (content) {
+      preview.classList.add('active');
+      previewContent.innerHTML = parseMarkdown(content);
+      document.getElementById(`previewAvatar${num}`).src = previewAvatar;
+      document.getElementById(`previewName${num}`).textContent = previewName;
+    } else {
+      preview.classList.remove('active');
+    }
+  });
+  
+  // Update embed preview
+  const embedPreview = document.getElementById('embedPreview');
+  if (embedTitle || embedDescription || embedAuthor || embedFooter) {
+    embedPreview.style.display = 'block';
+    embedPreview.style.borderLeftColor = embedColor;
+    
+    // Update all embed fields
+    document.getElementById('previewEmbedTitle').textContent = embedTitle || '';
+    document.getElementById('previewEmbedDescription').innerHTML = parseMarkdown(embedDescription || '');
+    document.getElementById('previewEmbedAuthor').textContent = embedAuthor || '';
+    document.getElementById('previewEmbedFooter').textContent = embedFooter || '';
+    
+    // Update thumbnail and image
+    const thumbnailUrl = document.getElementById('embedThumbnail').value;
+    const imageUrl = document.getElementById('embedImage').value;
+    
+    document.getElementById('previewEmbedThumbnail').innerHTML = thumbnailUrl ? 
+      `<img src="${thumbnailUrl}" alt="Thumbnail">` : '';
+    document.getElementById('previewEmbedImage').innerHTML = imageUrl ? 
+      `<img src="${imageUrl}" alt="Embed Image">` : '';
+      
+    // Update fields
+    const fieldsHtml = Array.from(document.getElementById('embedFields').children)
+      .map(field => {
+        const name = field.querySelector('input[placeholder="Field Name"]').value;
+        const value = field.querySelector('input[placeholder="Field Value"]').value;
+        const inline = field.querySelector('input[type="checkbox"]').checked;
+        if (name || value) {
+          return `<div class="embed-field ${inline ? 'inline' : ''}">
+            <strong>${name || '\u200b'}</strong>
+            <div>${value || '\u200b'}</div>
+          </div>`;
+        }
+        return '';
+      }).join('');
+    document.getElementById('previewEmbedFields').innerHTML = fieldsHtml;
+
+    if (embedAuthor) {
+      const authorIcon = document.getElementById('embedAuthorIcon').value;
+      const authorUrl = document.getElementById('embedAuthorUrl').value;
+      document.getElementById('previewEmbedAuthor').innerHTML = `
+        ${authorIcon ? `<img src="${authorIcon}" width="24" height="24">` : ''}
+        ${authorUrl ? `<a href="${authorUrl}">` : ''}
+        ${embedAuthor}
+        ${authorUrl ? '</a>' : ''}
+      `;
+    }
+
+    if (embedFooter) {
+      const footerIcon = document.getElementById('embedFooterIcon').value;
+      document.getElementById('previewEmbedFooter').innerHTML = `
+        ${footerIcon ? `<img src="${footerIcon}" width="20" height="20">` : ''}
+        ${embedFooter}
+      `;
+    }
+  } else {
+    embedPreview.style.display = 'none';
+  }
+  
+  // Add timestamp to all messages
+  const now = new Date();
+  const timeString = now.toLocaleString('en-US', { 
+    hour: 'numeric', 
+    minute: 'numeric', 
+    hour12: true 
+  });
+  document.querySelectorAll('.webhook-header').forEach(header => {
+    header.setAttribute('data-timestamp', 'Today at ' + timeString);
+  });
+}
+
+let rainbowInterval;
+
+async function sendWebhook() {
+  const webhookUrl = document.getElementById('webhookUrl').value;
+  const message1 = document.getElementById('messageInput1').value;
+  const message2 = document.getElementById('messageInput2').value;
+  const message3 = document.getElementById('messageInput3').value;
+  const customUsername = document.getElementById('customUsername').value;
+  const customAvatar = document.getElementById('customAvatar').value;
+  const enableRainbow = document.getElementById('rainbowEffect').checked;
+  
+  const embedTitle = document.getElementById('embedTitle').value;
+  const embedDescription = document.getElementById('embedDescription').value;
+  const embedAuthor = document.getElementById('embedAuthor').value;
+  const embedFooter = document.getElementById('embedFooter').value;
+  const embedColor = document.getElementById('embedColor').value;
+  const threadName = document.getElementById('threadName').value || undefined;
+  const ttsEnabled = document.getElementById('ttsEnabled').checked;
+  const allowMentions = document.getElementById('allowMentions').checked;
+
+  const invisibleUnicode = '\u200b';
+
+  if (!webhookUrl || (!message1 && !message2 && !embedTitle)) {
+    showStatus('Please provide webhook URL and at least one message or embed.', false);
+    return;
+  }
+
+  const embed = embedTitle || embedDescription || embedAuthor || embedFooter ? {
+    title: embedTitle || undefined,
+    description: embedDescription || undefined,
+    color: parseInt(embedColor.replace('#', ''), 16),
+    author: embedAuthor ? {
+      name: embedAuthor,
+      icon_url: document.getElementById('embedAuthorIcon').value || undefined,
+      url: document.getElementById('embedAuthorUrl').value || undefined
+    } : undefined,
+    footer: embedFooter ? {
+      text: embedFooter,
+      icon_url: document.getElementById('embedFooterIcon').value || undefined
+    } : undefined,
+    thumbnail: document.getElementById('embedThumbnail').value ? {
+      url: document.getElementById('embedThumbnail').value
+    } : undefined,
+    image: document.getElementById('embedImage').value ? {
+      url: document.getElementById('embedImage').value
+    } : undefined,
+    timestamp: document.getElementById('embedTimestamp').value || undefined,
+    url: document.getElementById('embedUrl').value || undefined,
+    fields: Array.from(document.getElementById('embedFields').children)
+      .map(field => ({
+        name: field.querySelector('input[placeholder="Field Name"]').value || '\u200b',
+        value: field.querySelector('input[placeholder="Field Value"]').value || '\u200b',
+        inline: field.querySelector('input[type="checkbox"]').checked
+      }))
+      .filter(field => field.name || field.value)
+  } : undefined;
+
+  try {
+    const webhookPayload = {
+      content: message1, // or message2 or message3
+      username: customUsername || undefined,
+      avatar_url: customAvatar || undefined,
+      tts: ttsEnabled,
+      allowed_mentions: allowMentions ? 
+        { parse: ['users', 'roles', 'everyone'] } : 
+        { parse: [] },
+      thread_name: threadName
+    };
+
+    if (message1) {
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(webhookPayload)
+      });
+    }
+
+    if (message2 || embed) {
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: message2 || '',
+          embeds: embed ? [embed] : undefined,
+          username: customUsername || undefined,
+          avatar_url: customAvatar || undefined,
+          tts: ttsEnabled,
+          allowed_mentions: allowMentions ? 
+            { parse: ['users', 'roles', 'everyone'] } : 
+            { parse: [] },
+          thread_name: threadName
+        })
+      });
+    }
+
+    if (message3) {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: message3,
+          username: customUsername || undefined,
+          avatar_url: customAvatar || undefined,
+          tts: ttsEnabled,
+          allowed_mentions: allowMentions ? 
+            { parse: ['users', 'roles', 'everyone'] } : 
+            { parse: [] },
+          thread_name: threadName
+        })
+      });
+      
+      if (enableRainbow && response.ok) {
+        const messageData = await response.json();
+        startRainbowEffect(webhookUrl, messageData.id, message3);
+      }
+    }
+
+    showStatus('Messages sent successfully!', true);
+    document.getElementById('messageInput1').value = '';
+    document.getElementById('messageInput2').value = '';
+    document.getElementById('messageInput3').value = '';
+    updatePreview();
+  } catch (error) {
+    showStatus('Failed to send messages. Please check your webhook URL.', false);
+  }
+}
+
+function showStatus(message, success) {
+  const statusElement = document.getElementById('status');
+  statusElement.textContent = message;
+  statusElement.className = 'status ' + (success ? 'success' : 'error');
+  
+  setTimeout(() => {
+    statusElement.style.display = 'none';
+  }, 3000);
+}
+</script>
+</body></html>
