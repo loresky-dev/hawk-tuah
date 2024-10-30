@@ -1,861 +1,589 @@
-<html><head><base href="." />
-<title>WEBHOOK</title>
-<link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png">
+<html><head><base href="*" />
+<title>Mega Wordle - With Custom Game Creation!</title>
 <style>
-:root {
-  --dark-primary: #36393f;
-  --dark-secondary: #2f3136;
-  --dark-tertiary: #202225;
-  --brand: #5865F2;
-  --brand-hover: #4752c4;
-  --text: #dcddde;
-  --text-muted: #72767d;
-  --success: #3ba55c;
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+#customLink {
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+#customLink input {
+    width: calc(100% - 40px);
+    margin: 10px 0;
+    font-size: 14px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+}
+
+#customLink p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.modal {
+    background: var(--background);
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 300px;
+    position: relative;
+    border: 2px solid var(--text);
+}
+
+.modal h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.modal-content {
+    margin: 20px 0;
+}
+
+.stats {
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.stat-item {
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.modal-button {
+    background: var(--correct);
+    color: var(--text);
+    border: none;
+    padding: 10px 30px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: var(--correct);
+    animation: fall 3s linear forwards;
+    z-index: 1001;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(100vh);
+    }
+}
+
+:root {
+    --correct: #538d4e;
+    --present: #b59f3b;
+    --absent: #3a3a3c;
+    --background: #121213;
+    --text: #ffffff;
 }
 
 body {
-  background: var(--dark-tertiary);
-  color: var(--text);
-  display: flex;
-  min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: var(--background);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
 }
 
-.sidebar {
-  width: 300px;
-  background: var(--dark-secondary);
-  padding: 20px;
-  border-right: 1px solid rgba(255,255,255,0.1);
+.game-container {
+    width: 100%;
+    max-width: 500px;
 }
 
-.main-content {
-  flex: 1;
-  background: var(--dark-primary);
-  padding: 20px;
+.grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 20px;
 }
 
-.webhook-input {
-  width: 100%;
-  background: var(--dark-tertiary);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: var(--text);
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  font-size: 14px;
+.row {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    margin-bottom: 5px;
 }
 
-.webhook-info {
-  background: var(--dark-tertiary);
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
+.tile {
+    width: 60px;
+    height: 60px;
+    border: 2px solid var(--absent);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
-.webhook-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  margin-bottom: 10px;
+.keyboard {
+    display: grid;
+    grid-template-rows: repeat(3, 1fr);
+    gap: 5px;
 }
 
-.preview-area {
-  background: var(--dark-tertiary);
-  border-radius: 4px;
-  padding: 16px;
-  margin-bottom: 20px;
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
 }
 
-.preview-area h3 {
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 12px;
-  color: #ffffff;
+.key {
+    background-color: var(--absent);
+    border: none;
+    border-radius: 4px;
+    color: var(--text);
+    font-weight: bold;
+    padding: 10px 15px;
+    cursor: pointer;
+    text-transform: uppercase;
 }
 
-.message-input {
-  width: 100%;
-  min-height: 100px;
-  background: var(--dark-tertiary);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: var(--text);
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 10px;
-  resize: vertical;
-  font-family: 'Whitney', sans-serif;
+.reveal {
+    animation: flip 0.5s ease;
 }
 
-.button {
-  background: var(--brand);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s;
+.correct {
+    background-color: var(--correct);
 }
 
-.button:hover {
-  background: var(--brand-hover);
+.present {
+    background-color: var(--present);
 }
 
-.preview-message {
-  background: var(--dark-primary);
-  padding: 12px 16px;
-  border-radius: 4px;
-  margin-top: 20px;
-  font-size: 16px;
-  line-height: 1.375;
-  display: none;
+.absent {
+    background-color: var(--absent);
 }
 
-.preview-message.active {
-  display: block;
+@keyframes flip {
+    0% {
+        transform: rotateX(0);
+    }
+    50% {
+        transform: rotateX(90deg);
+    }
+    100% {
+        transform: rotateX(0);
+    }
 }
 
-.embed-preview {
-  margin-top: 8px;
-  padding: 8px 12px;
-  border-radius: 4px;
-  background: var(--dark-tertiary);
-  border-left: 4px solid;
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
 
-.embed-title {
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 8px;
+.shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    background-color: rgba(255, 0, 0, 0.1);
 }
 
-.embed-author {
-  color: #ffffff;
-  font-size: 14px;
-  margin-bottom: 4px;
+.custom-section {
+    margin-top: 20px;
+    text-align: center;
 }
 
-.embed-description {
-  color: var(--text);
-  font-size: 14px;
-  margin-bottom: 8px;
+input {
+    padding: 10px;
+    margin: 10px;
+    font-size: 16px;
+    background: var(--absent);
+    border: 1px solid var(--text);
+    color: var(--text);
 }
 
-.embed-footer {
-  color: var(--text-muted);
-  font-size: 12px;
-  margin-top: 8px;
+.custom-section input {
+    width: 80%;
+    padding: 15px;
+    margin: 15px auto;
+    font-size: 18px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
-.embed-thumbnail img, .embed-image img {
-  max-width: 100%;
-  border-radius: 4px;
-  margin: 8px 0;
+.custom-section input:focus {
+    outline: none;
+    border-color: var(--correct);
+    background: rgba(255, 255, 255, 0.15);
 }
 
-.embed-field {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-  align-items: center;
+button {
+    padding: 10px 20px;
+    background: var(--correct);
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 4px;
 }
 
-.embed-fields {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 8px 0;
+.custom-section button {
+    background: linear-gradient(45deg, var(--correct), #6aaf67);
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+    margin: 15px 0;
 }
 
-.embed-field.inline {
-  display: inline-block;
-  width: calc(33.33% - 8px);
+.custom-section button:hover {
+    transform: translateY(-2px);
 }
 
-.embed-timestamp {
-  color: var(--text-muted);
-  font-size: 12px;
-  margin-top: 4px;
+.message {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    min-height: 30px;
+    padding: 10px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-.webhook-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 6px;
-  gap: 8px;
-}
-
-.webhook-header img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-.webhook-name {
-  color: #ffffff;
-  font-weight: 500;
-  font-size: 16px;
-}
-
-.webhook-header::after {
-  content: attr(data-timestamp);
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  margin-left: 8px;
-}
-
-#previewContent {
-  color: #dcddde;
-  font-size: 16px;
-  line-height: 1.375;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.spoiler {
-  background: #202225;
-  padding: 0 2px;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-
-.spoiler:hover {
-  background: rgba(255,255,255,0.1);
-}
-
-.quote {
-  border-left: 4px solid var(--text-muted);
-  padding-left: 8px;
-  margin: 4px 0;
-}
-
-#previewContent code {
-  background: rgba(0,0,0,0.3);
-  padding: 2px 4px;
-  border-radius: 3px;
-  font-family: monospace;
-}
-
-.status {
-  padding: 8px;
-  border-radius: 4px;
-  margin-top: 10px;
-  display: none;
-}
-
-.status.success {
-  background: var(--success);
-  display: block;
-}
-
-.status.error {
-  background: #ed4245;
-  display: block;
-}
-
-.advanced-options {
-  margin-top: 20px;
-  padding: 15px;
-  background: var(--dark-tertiary);
-  border-radius: 4px;
-}
-
-.option-row {
-  margin-bottom: 10px;
-}
-
-.option-row label {
-  display: block;
-  margin-bottom: 5px;
-  color: var(--text-muted);
-}
-
-.option-toggle {
-  margin: 10px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.option-toggle label {
-  color: var(--text);
-  font-size: 14px;
-}
-
-.markdown-guide {
-  background: var(--dark-tertiary);
-  padding: 15px;
-  border-radius: 4px;
-  margin-top: 20px;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.markdown-item {
-  margin-bottom: 15px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.markdown-item:last-child {
-  border-bottom: none;
-}
-
-.markdown-example {
-  background: var(--dark-primary);
-  padding: 8px;
-  border-radius: 4px;
-  margin-top: 5px;
-  font-family: monospace;
-}
-
-.embed-builder {
-  background: var(--dark-tertiary);
-  padding: 15px;
-  border-radius: 4px;
-  margin-top: 20px;
-}
-
-.embed-preview {
-  background: var(--dark-primary);
-  padding: 15px;
-  border-radius: 4px;
-  margin-top: 10px;
-  border-left: 4px solid var(--brand);
-}
-
-.color-picker {
-  width: 100%;
-  height: 40px;
-  background: var(--dark-tertiary);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 4px;
-  padding: 5px;
-  color: var(--text);
-}
-
-.message-container {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.message-column {
-  flex: 1;
+.message.show {
+    opacity: 1;
+    background-color: rgba(255, 0, 0, 0.2);
 }
 </style>
 </head>
 <body>
-<div class="sidebar">
-  <h2>Webhook Configuration</h2>
-  <input type="text" class="webhook-input" placeholder="Enter webhook URL" id="webhookUrl">
-  
-  <div class="webhook-info">
-    <img src="https://cdn.discordapp.com/embed/avatars/0.png" class="webhook-avatar" id="webhookAvatar">
-    <div id="webhookName">Not Connected</div>
-  </div>
-  
-  <div class="advanced-options">
-    <div class="option-row">
-      <label>Custom Username</label>
-      <input type="text" class="webhook-input" id="customUsername" placeholder="Override webhook name">
-    </div>
-    <div class="option-row">
-      <label>Custom Avatar URL</label>
-      <input type="text" class="webhook-input" id="customAvatar" placeholder="Override avatar URL">
-    </div>
-    <div class="option-row">
-      <label>Thread Name (Optional)</label>
-      <input type="text" class="webhook-input" id="threadName" placeholder="Create new thread">
-    </div>
-
-    <div class="option-toggle">
-      <input type="checkbox" id="ttsEnabled">
-      <label>Text-to-Speech</label>
-    </div>
-
-    <div class="option-toggle">
-      <input type="checkbox" id="allowMentions" checked>
-      <label>Allow Mentions</label>
-    </div>
-  </div>
-  
-  <div class="markdown-guide">
-    <h3>Markdown Guide</h3>
-    <div class="markdown-item">
-      <strong>Bold</strong>
-      <div class="markdown-example">**bold text**</div>
-    </div>
-    <div class="markdown-item">
-      <em>Italic</em>
-      <div class="markdown-example">*</em>italic text*<em></div>
-    </div>
-    <div class="markdown-item">
-      <u>Underline</u>
-      <div class="markdown-example">__underline__</div>
-    </div>
-    <div class="markdown-item">
-      <span style="text-decoration: line-through;">Strikethrough</span>
-      <div class="markdown-example">~~strikethrough~~</div>
-    </div>
-    <div class="markdown-item">
-      <code>Code Block</code>
-      <div class="markdown-example">```code block```</div>
-    </div>
-    <div class="markdown-item">
-      <span>Spoiler</span>
-      <div class="markdown-example">||spoiler text||</div>
-    </div>
-    <div class="markdown-item">
-      <span>Quote</span>
-      <div class="markdown-example">> quote text</div>
-    </div>
-    <div class="markdown-item">
-      <span>Inline Code</span>
-      <div class="markdown-example">`inline code`</div>
-    </div>
-    <div class="markdown-item">
-      <span>Headers</span>
-      <div class="markdown-example"># Large Header
-## Medium Header
-### Small Header</div>
-    </div>
-    <div class="markdown-item">
-      <span>Bullet List</span>
-      <div class="markdown-example">• First item
-• Second item</div>
-    </div>
-  </div>
+<h1>Mega Wordle</h1>
+<div class="game-container">
+    <div class="grid" id="grid"></div>
+    <div class="keyboard" id="keyboard"></div>
+    <div class="message" id="message"></div>
 </div>
 
-<div class="main-content">
-  <div class="preview-area">
-    <h3>Message Preview</h3>
-    <!-- Message 1 Preview -->
-    <div class="preview-message" id="preview1">
-      <div class="webhook-header">
-        <img src="https://cdn.discordapp.com/embed/avatars/0.png" id="previewAvatar1">
-        <div class="webhook-name" id="previewName1">Webhook</div>
-      </div>
-      <div id="previewContent1">First message will appear here...</div>
-    </div>
-    
-    <!-- Message 2 Preview -->
-    <div class="preview-message" id="preview2">
-      <div class="webhook-header">
-        <img src="https://cdn.discordapp.com/embed/avatars/0.png" id="previewAvatar2">
-        <div class="webhook-name" id="previewName2">Webhook</div>
-      </div>
-      <div id="previewContent2">Second message will appear here...</div>
-      <!-- Embed Preview -->
-      <div class="embed-preview" id="embedPreview">
-        <div class="embed-author" id="previewEmbedAuthor"></div>
-        <div class="embed-title" id="previewEmbedTitle"></div>
-        <div class="embed-description" id="previewEmbedDescription"></div>
-        <div class="embed-thumbnail" id="previewEmbedThumbnail"></div>
-        <div class="embed-image" id="previewEmbedImage"></div>
-        <div class="embed-fields" id="previewEmbedFields"></div>
-        <div class="embed-timestamp" id="previewEmbedTimestamp"></div>
-        <div class="embed-footer" id="previewEmbedFooter"></div>
-      </div>
-    </div>
-    
-    <!-- Message 3 Preview -->
-    <div class="preview-message" id="preview3">
-      <div class="webhook-header">
-        <img src="https://cdn.discordapp.com/embed/avatars/0.png" id="previewAvatar3">
-        <div class="webhook-name" id="previewName3">Webhook</div>
-      </div>
-      <div id="previewContent3">Third message will appear here...</div>
-    </div>
-  </div>
-  
-  <div class="message-container">
-    <div class="message-column">
-      <h3>Message 1</h3>
-      <textarea class="message-input" placeholder="Enter your first message here..." id="messageInput1"></textarea>
-    </div>
-    <div class="message-column">
-      <h3>Message 2</h3>
-      <textarea class="message-input" placeholder="Enter your second message here..." id="messageInput2"></textarea>
-    </div>
-    <div class="message-column">
-      <h3>Message 3</h3>
-      <textarea class="message-input" placeholder="Enter your third message here..." id="messageInput3"></textarea>
-    </div>
-  </div>
-
-  <div class="embed-builder">
-    <h3>Embed Builder</h3>
-    <input type="text" class="webhook-input" placeholder="Embed Title" id="embedTitle">
-    <textarea class="message-input" placeholder="Embed Description" id="embedDescription"></textarea>
-    <input type="text" class="webhook-input" placeholder="Author Name" id="embedAuthor">
-    <input type="text" class="webhook-input" id="embedAuthorIcon" placeholder="Author Icon URL">
-    <input type="text" class="webhook-input" id="embedAuthorUrl" placeholder="Author URL">
-    <input type="text" class="webhook-input" placeholder="Footer Text" id="embedFooter">
-    <input type="text" class="webhook-input" id="embedFooterIcon" placeholder="Footer Icon URL">
-    <input type="text" class="webhook-input" placeholder="Embed URL" id="embedUrl">
-    <input type="text" class="webhook-input" placeholder="Thumbnail URL" id="embedThumbnail">
-    <input type="text" class="webhook-input" placeholder="Image URL" id="embedImage">
-    <div class="option-row">
-      <label>Timestamp</label>
-      <input type="datetime-local" class="webhook-input" id="embedTimestamp">
-    </div>
-    <div class="option-row">
-      <label>Fields</label>
-      <div id="embedFields">
-        <div class="embed-field">
-          <input type="text" class="webhook-input" placeholder="Field Name">
-          <input type="text" class="webhook-input" placeholder="Field Value">
-          <input type="checkbox" id="inlineField"> Inline
+<div class="modal-overlay" id="gameEndModal">
+    <div class="modal">
+        <h2 id="modalTitle"></h2>
+        <div class="modal-content">
+            <p id="wordReveal"></p>
+            <div class="stats">
+                <div class="stat-item" id="timeTaken"></div>
+                <div class="stat-item" id="avgTime"></div>
+                <div class="stat-item" id="percentile"></div>
+                <div class="stat-item" id="guessCount"></div>
+            </div>
         </div>
-      </div>
-      <button class="button" onclick="addEmbedField()">Add Field</button>
+        <button class="modal-button" onclick="closeModal()">OK</button>
     </div>
-    <input type="color" class="color-picker" id="embedColor" value="#5865F2">
-  </div>
+</div>
 
-  <button class="button" onclick="sendWebhook()">Send Messages</button>
-  <div id="status" class="status"></div>
+<div class="custom-section">
+    <input type="text" id="customWord" maxlength="5" placeholder="Enter any 5-letter word">
+    <button onclick="createCustomGame()">Create Game</button>
+    <div id="customLink"></div>
 </div>
 
 <script>
-let webhookData = {
-  name: null,
-  avatar: null
+const WORD_LIST = ["about", "above", "abuse", "actor", "acute", "admit", "adopt", "adult", "after", "again", "agent", "agree", "ahead", "alarm", "album", "alert", "alike", "alive", "allow", "alone", "along", "alter", "among", "anger", "angle", "angry", "apart", "apple", "apply", "arena", "argue", "arise", "array", "aside", "asset", "audio", "audit", "avoid", "award", "aware", "badly", "baker", "bases", "basic", "basis", "beach", "beast", "began", "begin", "begun", "being", "belly", "below", "bench", "billy", "birth", "black", "blame", "blast", "blaze", "blend", "blind", "block", "blood", "board", "boost", "booth", "bound", "brain", "brake", "brand", "brass", "brave", "bread", "break", "breed", "brick", "brief", "bring", "brisk", "broad", "broke", "brown", "brush", "build", "built", "bunch", "buyer", "cable", "calif", "carry", "catch", "cause", "chain", "chair", "chalk", "charm", "chart", "chase", "cheap", "check", "chest", "chief", "child", "chill", "china", "chord", "chose", "civil", "claim", "clamp", "clash", "class", "clean", "clear", "clock", "close", "cloth", "cloud", "coach", "coast", "color", "could", "count", "court", "cover", "craft", "crash", "cream", "creek", "crest", "crime", "cross", "crowd", "crown", "crush", "curve", "cycle", "daily", "dance", "dated", "dealt", "death", "debut", "delay", "depth", "doing", "doubt", "dozen", "draft", "drain", "drama", "drawn", "dream", "dress", "dried", "drift", "drill", "drink", "drive", "drove", "dying", "eager", "early", "earth", "eight", "elite", "empty", "enemy", "enjoy", "enter", "entry", "equal", "error", "event", "every", "exact", "exist", "extra", "faith", "false", "fault", "fiber", "field", "fifth", "fifty", "fight", "final", "first", "fixed", "fizzy", "flake", "flame", "flash", "fleet", "flesh", "float", "flock", "floor", "flour", "fluid", "flush", "focus", "force", "forge", "forth", "forty", "forum", "found", "frame", "frank", "fraud", "fresh", "front", "frost", "fruit", "fully", "funny", "giant", "given", "glass", "globe", "glory", "going", "grace", "grade", "grain", "grand", "grant", "grape", "grass", "grave", "great", "green", "grind", "groan", "gross", "group", "grown", "guard", "guess", "guest", "guide", "happy", "harry", "heart", "heath", "heavy", "hedge", "hello", "hence", "henry", "horse", "hotel", "house", "hover", "human", "humid", "humor", "hurry", "ideal", "image", "index", "inner", "input", "issue", "ivory", "japan", "jimmy", "joint", "jones", "judge", "juice", "known", "label", "large", "laser", "later", "laugh", "layer", "learn", "lease", "least", "leave", "legal", "lemon", "level", "lewis", "light", "limit", "links", "liver", "lives", "local", "logic", "loose", "lower", "lucky", "lunch", "lying", "magic", "major", "maker", "maple", "march", "maria", "match", "maybe", "mayor", "meant", "media", "medal", "metal", "might", "minor", "minus", "mixed", "model", "moist", "money", "month", "moral", "motor", "mount", "mouse", "mouth", "movie", "music", "naive", "needs", "nerve", "never", "newly", "night", "noble", "noise", "north", "noted", "novel", "nurse", "occur", "ocean", "offer", "often", "onion", "order", "other", "ought", "paint", "panel", "paper", "party", "paste", "patch", "pause", "peace", "peach", "pearl", "pedal", "peter", "phase", "phone", "photo", "piano", "piece", "pilot", "pinch", "pitch", "place", "plain", "plane", "plant", "plate", "plaza", "point", "pound", "power", "press", "price", "pride", "prime", "print", "prior", "prize", "probe", "proof", "proud", "prove", "pulse", "punch", "pupil", "queen", "quick", "quiet", "quite", "radar", "radio", "raise", "range", "rapid", "ratio", "reach", "ready", "realm", "rebel", "refer", "reign", "relax", "relay", "right", "rival", "river", "robin", "robot", "roger", "roman", "rough", "round", "royal", "rural", "scale", "scene", "scope", "score", "scout", "scrap", "sense", "serve", "seven", "shade", "shaft", "shake", "shall", "shame", "shape", "share", "shark", "sharp", "sheep", "sheer", "sheet", "shelf", "shell", "shift", "shine", "shirt", "shock", "shoot", "shore", "short", "shown", "sight", "since", "sixth", "sixty", "sized", "skill", "skirt", "skull", "slate", "sleep", "slide", "slime", "slope", "small", "smart", "smile", "smith", "smoke", "snack", "snake", "sneak", "solid", "solve", "sorry", "sound", "south", "space", "spare", "spark", "speak", "speed", "spell", "spend", "spent", "spice", "spine", "split", "spoil", "spoke", "spoon", "sport", "spray", "stack", "staff", "stage", "stake", "stall", "stamp", "stand", "stare", "start", "state", "steam", "steel", "steep", "steer", "stick", "still", "stock", "stone", "stood", "store", "storm", "story", "strap", "straw", "strip", "stuck", "study", "stuff", "style", "sugar", "suite", "super", "surge", "sweet", "swing", "sword", "table", "taken", "taste", "taxes", "teach", "teeth", "terry", "texas", "thank", "theft", "their", "theme", "there", "these", "thick", "thief", "thing", "think", "third", "those", "three", "threw", "throw", "thumb", "tight", "timer", "times", "tired", "title", "toast", "today", "topic", "torch", "total", "touch", "tough", "tower", "trace", "track", "trade", "trail", "train", "trash", "treat", "trend", "trial", "tribe", "trick", "tried", "tries", "truck", "truly", "trunk", "trust", "truth", "twice", "twist", "typed", "under", "undue", "union", "unity", "until", "upper", "upset", "urban", "usage", "usual", "valid", "value", "vapor", "vault", "venue", "video", "virus", "visit", "vital", "voice", "voter", "waste", "watch", "water", "wayne", "weeks", "whale", "wheat", "wheel", "where", "which", "while", "white", "whole", "whose", "woman", "women", "world", "worry", "worse", "worst", "worth", "would", "wound", "wrist", "write", "wrong", "wrote", "yacht", "yield", "young", "youth", "zebra"];
+
+let currentWord;
+let guessesRemaining = 6;
+let currentGuess = [];
+let nextLetter = 0;
+let gameActive = true;
+let startTime = Date.now();
+let gameStats = {
+    avgTime: 120000, // 2 minutes average (mock data)
+    totalGames: 1000 // mock data for percentile calculation
 };
 
-function parseMarkdown(text) {
-  return text
-    // Headers
-    .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
-    // Bold
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Italic
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    // Underline
-    .replace(/__(.*?)__/g, '<u>$1</u>')
-    // Strikethrough
-    .replace(/~~(.*?)~~/g, '<span style="text-decoration: line-through;">$1</span>')
-    // Code blocks
-    .replace(/```(.*?)```/g, '<code>$1</code>')
-    // Inline code
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    // Bullet points
-    .replace(/^• (.*?)$/gm, '<li>$1</li>')
-    // Spoiler
-    .replace(/\|\|(.*?)\|\|/g, '<span class="spoiler">$1</span>')
-    // Quote
-    .replace(/^> (.*)$/gm, '<div class="quote">$1</div>');
-}
-
-document.getElementById('webhookUrl').addEventListener('input', debounce(fetchWebhookInfo, 500));
-document.getElementById('messageInput1').addEventListener('input', updatePreview);
-document.getElementById('messageInput2').addEventListener('input', updatePreview);
-document.getElementById('messageInput3').addEventListener('input', updatePreview);
-document.getElementById('customUsername').addEventListener('input', updatePreview);
-document.getElementById('customAvatar').addEventListener('input', updatePreview);
-document.getElementById('embedTitle').addEventListener('input', updatePreview);
-document.getElementById('embedDescription').addEventListener('input', updatePreview);
-document.getElementById('embedAuthor').addEventListener('input', updatePreview);
-document.getElementById('embedFooter').addEventListener('input', updatePreview);
-document.getElementById('embedColor').addEventListener('input', updatePreview);
-document.getElementById('embedUrl').addEventListener('input', updatePreview);
-document.getElementById('embedThumbnail').addEventListener('input', updatePreview);
-document.getElementById('embedImage').addEventListener('input', updatePreview);
-document.getElementById('embedTimestamp').addEventListener('input', updatePreview);
-
-function addEmbedField() {
-  const fieldsDiv = document.getElementById('embedFields');
-  const newField = document.createElement('div');
-  newField.className = 'embed-field';
-  newField.innerHTML = `
-    <input type="text" class="webhook-input" placeholder="Field Name">
-    <input type="text" class="webhook-input" placeholder="Field Value">
-    <input type="checkbox"> Inline
-  `;
-  fieldsDiv.appendChild(newField);
-  updatePreview();
-}
-
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-async function fetchWebhookInfo() {
-  const webhookUrl = document.getElementById('webhookUrl').value;
-  if (!webhookUrl.includes('discord.com/api/webhooks')) {
-    return;
-  }
-
-  try {
-    const response = await fetch(webhookUrl);
-    const data = await response.json();
-    
-    webhookData.name = data.name;
-    webhookData.avatar = data.avatar ? 
-      `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png` :
-      'https://cdn.discordapp.com/embed/avatars/0.png';
-    
-    document.getElementById('webhookAvatar').src = webhookData.avatar;
-    document.getElementById('webhookName').textContent = webhookData.name;
-    
-    updatePreview();
-  } catch (error) {
-    console.error('Error fetching webhook:', error);
-  }
-}
-
-function updatePreview() {
-  const message1 = document.getElementById('messageInput1').value;
-  const message2 = document.getElementById('messageInput2').value;
-  const message3 = document.getElementById('messageInput3').value;
-  const customUsername = document.getElementById('customUsername').value;
-  const customAvatar = document.getElementById('customAvatar').value;
-  
-  // Embed data
-  const embedTitle = document.getElementById('embedTitle').value;
-  const embedDescription = document.getElementById('embedDescription').value;
-  const embedAuthor = document.getElementById('embedAuthor').value;
-  const embedFooter = document.getElementById('embedFooter').value;
-  const embedColor = document.getElementById('embedColor').value;
-  
-  // Update all preview sections
-  const previewAvatar = customAvatar || webhookData.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
-  const previewName = customUsername || webhookData.name || 'Webhook';
-  
-  // Show/hide and update messages based on content
-  ['1', '2', '3'].forEach(num => {
-    const content = document.getElementById(`messageInput${num}`).value;
-    const preview = document.getElementById(`preview${num}`);
-    const previewContent = document.getElementById(`previewContent${num}`);
-    
-    if (content) {
-      preview.classList.add('active');
-      previewContent.innerHTML = parseMarkdown(content);
-      document.getElementById(`previewAvatar${num}`).src = previewAvatar;
-      document.getElementById(`previewName${num}`).textContent = previewName;
-    } else {
-      preview.classList.remove('active');
-    }
-  });
-  
-  // Update embed preview
-  const embedPreview = document.getElementById('embedPreview');
-  if (embedTitle || embedDescription || embedAuthor || embedFooter) {
-    embedPreview.style.display = 'block';
-    embedPreview.style.borderLeftColor = embedColor;
-    
-    // Update all embed fields
-    document.getElementById('previewEmbedTitle').textContent = embedTitle || '';
-    document.getElementById('previewEmbedDescription').innerHTML = parseMarkdown(embedDescription || '');
-    document.getElementById('previewEmbedAuthor').textContent = embedAuthor || '';
-    document.getElementById('previewEmbedFooter').textContent = embedFooter || '';
-    
-    // Update thumbnail and image
-    const thumbnailUrl = document.getElementById('embedThumbnail').value;
-    const imageUrl = document.getElementById('embedImage').value;
-    
-    document.getElementById('previewEmbedThumbnail').innerHTML = thumbnailUrl ? 
-      `<img src="${thumbnailUrl}" alt="Thumbnail">` : '';
-    document.getElementById('previewEmbedImage').innerHTML = imageUrl ? 
-      `<img src="${imageUrl}" alt="Embed Image">` : '';
-      
-    // Update fields
-    const fieldsHtml = Array.from(document.getElementById('embedFields').children)
-      .map(field => {
-        const name = field.querySelector('input[placeholder="Field Name"]').value;
-        const value = field.querySelector('input[placeholder="Field Value"]').value;
-        const inline = field.querySelector('input[type="checkbox"]').checked;
-        if (name || value) {
-          return `<div class="embed-field ${inline ? 'inline' : ''}">
-            <strong>${name || '\u200b'}</strong>
-            <div>${value || '\u200b'}</div>
-          </div>`;
+// Initialize game board
+function initializeBoard() {
+    const grid = document.getElementById("grid");
+    for (let i = 0; i < 6; i++) {
+        const row = document.createElement("div");
+        row.className = "row";
+        for (let j = 0; j < 5; j++) {
+            const tile = document.createElement("div");
+            tile.className = "tile";
+            tile.id = `tile-${i}-${j}`;
+            row.appendChild(tile);
         }
-        return '';
-      }).join('');
-    document.getElementById('previewEmbedFields').innerHTML = fieldsHtml;
-
-    if (embedAuthor) {
-      const authorIcon = document.getElementById('embedAuthorIcon').value;
-      const authorUrl = document.getElementById('embedAuthorUrl').value;
-      document.getElementById('previewEmbedAuthor').innerHTML = `
-        ${authorIcon ? `<img src="${authorIcon}" width="24" height="24">` : ''}
-        ${authorUrl ? `<a href="${authorUrl}">` : ''}
-        ${embedAuthor}
-        ${authorUrl ? '</a>' : ''}
-      `;
+        grid.appendChild(row);
     }
-
-    if (embedFooter) {
-      const footerIcon = document.getElementById('embedFooterIcon').value;
-      document.getElementById('previewEmbedFooter').innerHTML = `
-        ${footerIcon ? `<img src="${footerIcon}" width="20" height="20">` : ''}
-        ${embedFooter}
-      `;
-    }
-  } else {
-    embedPreview.style.display = 'none';
-  }
-  
-  // Add timestamp to all messages
-  const now = new Date();
-  const timeString = now.toLocaleString('en-US', { 
-    hour: 'numeric', 
-    minute: 'numeric', 
-    hour12: true 
-  });
-  document.querySelectorAll('.webhook-header').forEach(header => {
-    header.setAttribute('data-timestamp', 'Today at ' + timeString);
-  });
 }
 
-async function sendWebhook() {
-  const webhookUrl = document.getElementById('webhookUrl').value;
-  const message1 = document.getElementById('messageInput1').value;
-  const message2 = document.getElementById('messageInput2').value;
-  const message3 = document.getElementById('messageInput3').value;
-  const customUsername = document.getElementById('customUsername').value;
-  const customAvatar = document.getElementById('customAvatar').value;
-  
-  const embedTitle = document.getElementById('embedTitle').value;
-  const embedDescription = document.getElementById('embedDescription').value;
-  const embedAuthor = document.getElementById('embedAuthor').value;
-  const embedFooter = document.getElementById('embedFooter').value;
-  const embedColor = document.getElementById('embedColor').value;
-  const threadName = document.getElementById('threadName').value || undefined;
-  const ttsEnabled = document.getElementById('ttsEnabled').checked;
-  const allowMentions = document.getElementById('allowMentions').checked;
+// Initialize keyboard
+function initializeKeyboard() {
+    const keyboard = document.getElementById("keyboard");
+    const keys = [
+        ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+        ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+        ["Enter", "Z", "X", "C", "V", "B", "N", "M", "⌫"]
+    ];
 
-  const invisibleUnicode = '\u200b';
-
-  if (!webhookUrl || (!message1 && !message2 && !embedTitle)) {
-    showStatus('Please provide webhook URL and at least one message or embed.', false);
-    return;
-  }
-
-  const embed = embedTitle || embedDescription || embedAuthor || embedFooter ? {
-    title: embedTitle || undefined,
-    description: embedDescription || undefined,
-    color: parseInt(embedColor.replace('#', ''), 16),
-    author: embedAuthor ? {
-      name: embedAuthor,
-      icon_url: document.getElementById('embedAuthorIcon').value || undefined,
-      url: document.getElementById('embedAuthorUrl').value || undefined
-    } : undefined,
-    footer: embedFooter ? {
-      text: embedFooter,
-      icon_url: document.getElementById('embedFooterIcon').value || undefined
-    } : undefined,
-    thumbnail: document.getElementById('embedThumbnail').value ? {
-      url: document.getElementById('embedThumbnail').value
-    } : undefined,
-    image: document.getElementById('embedImage').value ? {
-      url: document.getElementById('embedImage').value
-    } : undefined,
-    timestamp: document.getElementById('embedTimestamp').value || undefined,
-    url: document.getElementById('embedUrl').value || undefined,
-    fields: Array.from(document.getElementById('embedFields').children)
-      .map(field => ({
-        name: field.querySelector('input[placeholder="Field Name"]').value || '\u200b',
-        value: field.querySelector('input[placeholder="Field Value"]').value || '\u200b',
-        inline: field.querySelector('input[type="checkbox"]').checked
-      }))
-      .filter(field => field.name || field.value)
-  } : undefined;
-
-  try {
-    const webhookPayload = {
-      content: message1, // or message2 or message3
-      username: customUsername || undefined,
-      avatar_url: customAvatar || undefined,
-      tts: ttsEnabled,
-      allowed_mentions: allowMentions ? 
-        { parse: ['users', 'roles', 'everyone'] } : 
-        { parse: [] },
-      thread_name: threadName
-    };
-
-    if (message1) {
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(webhookPayload)
-      });
-    }
-
-    if (message2 || embed) {
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: message2 || '',
-          embeds: embed ? [embed] : undefined,
-          username: customUsername || undefined,
-          avatar_url: customAvatar || undefined,
-          tts: ttsEnabled,
-          allowed_mentions: allowMentions ? 
-            { parse: ['users', 'roles', 'everyone'] } : 
-            { parse: [] },
-          thread_name: threadName
-        })
-      });
-    }
-
-    if (message3) {
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: message3,
-          username: customUsername || undefined,
-          avatar_url: customAvatar || undefined,
-          tts: ttsEnabled,
-          allowed_mentions: allowMentions ? 
-            { parse: ['users', 'roles', 'everyone'] } : 
-            { parse: [] },
-          thread_name: threadName
-        })
-      });
-    }
-
-    showStatus('Messages sent successfully!', true);
-    document.getElementById('messageInput1').value = '';
-    document.getElementById('messageInput2').value = '';
-    document.getElementById('messageInput3').value = '';
-    updatePreview();
-  } catch (error) {
-    showStatus('Failed to send messages. Please check your webhook URL.', false);
-  }
+    keys.forEach(row => {
+        const keyboardRow = document.createElement("div");
+        keyboardRow.className = "keyboard-row";
+        row.forEach(key => {
+            const buttonElement = document.createElement("button");
+            buttonElement.textContent = key;
+            buttonElement.className = "key";
+            buttonElement.onclick = () => handleKeyPress(key);
+            keyboardRow.appendChild(buttonElement);
+        });
+        keyboard.appendChild(keyboardRow);
+    });
 }
 
-function showStatus(message, success) {
-  const statusElement = document.getElementById('status');
-  statusElement.textContent = message;
-  statusElement.className = 'status ' + (success ? 'success' : 'error');
-  
-  setTimeout(() => {
-    statusElement.style.display = 'none';
-  }, 3000);
+// Handle key press
+function handleKeyPress(key) {
+    if (!gameActive) return;
+
+    if (key === "⌫") {
+        deleteLetter();
+        return;
+    }
+
+    if (key === "Enter") {
+        checkGuess();
+        return;
+    }
+
+    if (currentGuess.length < 5) {
+        addLetter(key);
+    }
 }
+
+function addLetter(letter) {
+    if (currentGuess.length >= 5) return;
+    
+    currentGuess.push(letter);
+    let tile = document.getElementById(`tile-${6-guessesRemaining}-${nextLetter}`);
+    tile.textContent = letter;
+    nextLetter++;
+}
+
+function deleteLetter() {
+    if (nextLetter <= 0) return;
+    
+    nextLetter--;
+    currentGuess.pop();
+    let tile = document.getElementById(`tile-${6-guessesRemaining}-${nextLetter}`);
+    tile.textContent = "";
+}
+
+function checkGuess() {
+    if (currentGuess.length !== 5) {
+        showMessage("Not enough letters!");
+        return;
+    }
+
+    const guess = currentGuess.join("").toLowerCase();
+    const urlParams = new URLSearchParams(window.location.search);
+    const isCustomGame = urlParams.has('w');
+    
+    // Only check word list if it's NOT a custom game
+    if (!isCustomGame && !WORD_LIST.includes(guess) && guess !== currentWord) {
+        showMessage("Word not in list!");
+        let rowIndex = 6-guessesRemaining;
+        for (let i = 0; i < 5; i++) {
+            let tile = document.getElementById(`tile-${rowIndex}-${i}`);
+            tile.classList.add("shake");
+        }
+        setTimeout(() => {
+            for (let i = 0; i < 5; i++) {
+                let tile = document.getElementById(`tile-${rowIndex}-${i}`);
+                tile.classList.remove("shake");
+            }
+        }, 500);
+        return;
+    }
+
+    let checkArray = new Array(5).fill("absent");
+    let letterCount = {};
+    
+    // Count letters in current word
+    for (let i = 0; i < currentWord.length; i++) {
+        letterCount[currentWord[i]] = (letterCount[currentWord[i]] || 0) + 1;
+    }
+
+    // Check for correct positions first
+    for (let i = 0; i < 5; i++) {
+        if (guess[i] === currentWord[i]) {
+            checkArray[i] = "correct";
+            letterCount[guess[i]]--;
+        }
+    }
+
+    // Check for present letters
+    for (let i = 0; i < 5; i++) {
+        if (checkArray[i] !== "correct" && letterCount[guess[i]] > 0) {
+            checkArray[i] = "present";
+            letterCount[guess[i]]--;
+        }
+    }
+
+    // Animate tiles
+    for (let i = 0; i < 5; i++) {
+        let tile = document.getElementById(`tile-${6-guessesRemaining}-${i}`);
+        setTimeout(() => {
+            tile.classList.add("reveal");
+            tile.classList.add(checkArray[i]);
+        }, i * 200);
+    }
+
+    if (guess === currentWord) {
+        showGameEndModal(true);
+        gameActive = false;
+        return;
+    }
+
+    guessesRemaining--;
+    currentGuess = [];
+    nextLetter = 0;
+
+    if (guessesRemaining === 0) {
+        showGameEndModal(false);
+        gameActive = false;
+    }
+}
+
+function showMessage(msg) {
+    const messageElement = document.getElementById("message");
+    messageElement.textContent = msg;
+    messageElement.classList.add('show');
+    
+    if (msg === "Word not in list!") {
+        document.body.classList.add('shake');
+        setTimeout(() => {
+            document.body.classList.remove('shake');
+        }, 500);
+    }
+    
+    setTimeout(() => {
+        messageElement.classList.remove('show');
+        setTimeout(() => {
+            messageElement.textContent = "";
+        }, 300);
+    }, 5000);
+}
+
+function createCustomGame() {
+    const customWord = document.getElementById("customWord").value.toLowerCase();
+    if (customWord.length !== 5) {
+        showMessage("Word must be exactly 5 letters!");
+        return;
+    }
+    
+    // Create a more complex encoding with random salt
+    const salt = Math.random().toString(36).substring(2, 15);
+    const encodedWord = btoa(customWord + '|' + salt); // Add salt to make URLs unique
+    const gameUrl = `${window.location.origin}${window.location.pathname}?w=${encodedWord}`;
+    
+    const linkDiv = document.getElementById("customLink");
+    linkDiv.innerHTML = `
+        <p>Share this link for your custom game:</p>
+        <input type="text" value="${gameUrl}" readonly>`;
+}
+
+// Start game
+function createConfetti() {
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.animationDelay = Math.random() * 2 + 's';
+        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 50%, 50%)`;
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 3000);
+    }
+}
+
+function showGameEndModal(won) {
+    const timeTaken = Date.now() - startTime;
+    const modal = document.getElementById('gameEndModal');
+    const title = document.getElementById('modalTitle');
+    const wordReveal = document.getElementById('wordReveal');
+    
+    title.textContent = won ? "You've Won! 🎉" : "Game Over";
+    wordReveal.textContent = `The word was: ${currentWord.toUpperCase()}`;
+    
+    document.getElementById('timeTaken').textContent = `Time: ${Math.floor(timeTaken/1000)} seconds`;
+    document.getElementById('avgTime').textContent = `Average time: ${Math.floor(gameStats.avgTime/1000)} seconds`;
+    document.getElementById('percentile').textContent = `You're in the ${calculatePercentile(timeTaken)}th percentile`;
+    document.getElementById('guessCount').textContent = `Guesses: ${6 - guessesRemaining + 1}`;
+    
+    modal.style.display = 'flex';
+    
+    if (won) {
+        createConfetti();
+    }
+}
+
+function closeModal() {
+    document.getElementById('gameEndModal').style.display = 'none';
+}
+
+function calculatePercentile(time) {
+    // Mock calculation - would normally use real stats
+    return Math.floor((gameStats.avgTime - time) / gameStats.avgTime * 100);
+}
+
+function startGame() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('w')) {
+        try {
+            const decoded = atob(urlParams.get('w')).split('|')[0]; // Extract word, ignore salt
+            currentWord = decoded.toLowerCase();
+        } catch(e) {
+            currentWord = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+        }
+    } else {
+        currentWord = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+    }
+    
+    initializeBoard();
+    initializeKeyboard();
+    
+    document.addEventListener("keyup", (e) => {
+        if (!gameActive) return;
+        
+        if (e.key === "Enter") {
+            handleKeyPress("Enter");
+        } else if (e.key === "Backspace") {
+            handleKeyPress("⌫");
+        } else if (e.key.match(/^[a-zA-Z]$/)) {
+            handleKeyPress(e.key.toUpperCase());
+        }
+    });
+}
+
+startGame();
 </script>
 </body></html>
