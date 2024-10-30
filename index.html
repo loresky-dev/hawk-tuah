@@ -309,19 +309,6 @@ body {
   border-bottom: none;
 }
 
-@keyframes rainbow {
-  0% { color: #ff0000; }
-  20% { color: #ff9900; }
-  40% { color: #ffff00; }
-  60% { color: #33ff00; }
-  80% { color: #0099ff; }
-  100% { color: #ff00ff; }
-}
-
-.rainbow-text {
-  animation: rainbow 5s linear infinite;
-}
-
 .markdown-example {
   background: var(--dark-primary);
   padding: 8px;
@@ -504,12 +491,6 @@ body {
       <h3>Message 3</h3>
       <textarea class="message-input" placeholder="Enter your third message here..." id="messageInput3"></textarea>
     </div>
-  </div>
-
-  <div class="message-options">
-    <label>
-      <input type="checkbox" id="rainbowEffect"> Enable Rainbow Text Effect
-    </label>
   </div>
 
   <div class="embed-builder">
@@ -748,8 +729,6 @@ function updatePreview() {
   });
 }
 
-let rainbowInterval;
-
 async function sendWebhook() {
   const webhookUrl = document.getElementById('webhookUrl').value;
   const message1 = document.getElementById('messageInput1').value;
@@ -757,7 +736,6 @@ async function sendWebhook() {
   const message3 = document.getElementById('messageInput3').value;
   const customUsername = document.getElementById('customUsername').value;
   const customAvatar = document.getElementById('customAvatar').value;
-  const enableRainbow = document.getElementById('rainbowEffect').checked;
   
   const embedTitle = document.getElementById('embedTitle').value;
   const embedDescription = document.getElementById('embedDescription').value;
@@ -844,7 +822,7 @@ async function sendWebhook() {
     }
 
     if (message3) {
-      const response = await fetch(webhookUrl, {
+      await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -858,11 +836,6 @@ async function sendWebhook() {
           thread_name: threadName
         })
       });
-      
-      if (enableRainbow && response.ok) {
-        const messageData = await response.json();
-        startRainbowEffect(webhookUrl, messageData.id, message3);
-      }
     }
 
     showStatus('Messages sent successfully!', true);
