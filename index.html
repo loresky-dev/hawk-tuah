@@ -1,595 +1,723 @@
-<html><head><base href="*" />
-<meta property="og:title" content="Wordle by loresky">
-<meta property="og:description" content="Play a custom Wordle game!">
-<meta property="og:image" content="https://avatars.githubusercontent.com/u/11497588?v=4">
-<meta property="og:type" content="website">
-<meta property="theme-color" content="#538d4e">
-<meta name="twitter:card" content="summary_large_image">
-<title>Mega Wordle - With Custom Game Creation!</title>
+<html><head><base href="/">
 <style>
-.modal-overlay {
+  body { 
+    margin: 0;
+    overflow: hidden;
+    background: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    cursor: crosshair;
+  }
+
+  .overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: none;
+    background: rgba(0,0,0,0.9);
+    display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-}
+  }
 
-#customLink {
-    margin-top: 20px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-}
-
-#customLink input {
-    width: calc(100% - 40px);
-    margin: 10px 0;
-    font-size: 14px;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-}
-
-#customLink p {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 14px;
-    margin-bottom: 10px;
-}
-
-.modal {
-    background: var(--background);
-    padding: 30px;
-    border-radius: 8px;
-    text-align: center;
-    min-width: 300px;
-    position: relative;
-    border: 2px solid var(--text);
-}
-
-.modal h2 {
+  .start-button {
+    padding: 20px 40px;
     font-size: 24px;
-    margin-bottom: 20px;
-}
-
-.modal-content {
-    margin: 20px 0;
-}
-
-.stats {
-    margin: 20px 0;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-}
-
-.stat-item {
-    margin: 10px 0;
-    font-size: 14px;
-}
-
-.modal-button {
-    background: var(--correct);
-    color: var(--text);
+    background: #ff6b6b;
+    color: white;
     border: none;
-    padding: 10px 30px;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 16px;
-    margin-top: 20px;
-}
+    transition: transform 0.2s;
+  }
 
-.confetti {
-    position: fixed;
-    width: 10px;
-    height: 10px;
-    background: var(--correct);
-    animation: fall 3s linear forwards;
-    z-index: 1001;
-}
+  .start-button:hover {
+    transform: scale(1.1);
+  }
 
-@keyframes fall {
-    to {
-        transform: translateY(100vh);
-    }
-}
+  .player, .enemy {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    transition: all 0.1s;
+  }
 
-:root {
-    --correct: #538d4e;
-    --present: #b59f3b;
-    --absent: #3a3a3c;
-    --background: #121213;
-    --text: #ffffff;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    background-color: var(--background);
-    color: var(--text);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 0;
-    padding: 20px;
-}
-
-.game-container {
+  .enemy img {
     width: 100%;
-    max-width: 500px;
-}
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    filter: hue-rotate(300deg) saturate(200%);
+  }
 
-.grid {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    margin-bottom: 20px;
-}
+  .player img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
 
-.row {
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-    margin-bottom: 5px;
-}
+  .bullet {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 255, 255, 0.7);
+    border-radius: 50%;
+    pointer-events: none;
+  }
 
-.tile {
-    width: 60px;
-    height: 60px;
-    border: 2px solid var(--absent);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.keyboard {
-    display: grid;
-    grid-template-rows: repeat(3, 1fr);
-    gap: 5px;
-}
-
-.keyboard-row {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-}
-
-.key {
-    background-color: var(--absent);
+  .click-me {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background: #ff6b6b;
+    color: white;
     border: none;
-    border-radius: 4px;
-    color: var(--text);
-    font-weight: bold;
-    padding: 10px 15px;
+    border-radius: 5px;
     cursor: pointer;
-    text-transform: uppercase;
-}
+    transition: transform 0.2s;
+  }
 
-.reveal {
-    animation: flip 0.5s ease;
-}
+  .click-me:hover {
+    transform: scale(1.1);
+  }
 
-.correct {
-    background-color: var(--correct);
-}
+  .attack-effect {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,107,107,0.7) 0%, rgba(255,107,107,0) 70%);
+    animation: attack 0.5s ease-out forwards;
+    pointer-events: none;
+  }
 
-.present {
-    background-color: var(--present);
-}
-
-.absent {
-    background-color: var(--absent);
-}
-
-@keyframes flip {
+  @keyframes attack {
     0% {
-        transform: rotateX(0);
-    }
-    50% {
-        transform: rotateX(90deg);
+      transform: scale(0);
+      opacity: 1;
     }
     100% {
-        transform: rotateX(0);
+      transform: scale(2);
+      opacity: 0;
     }
-}
+  }
 
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(5px); }
-}
-
-.shake {
-    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-    background-color: rgba(255, 0, 0, 0.1);
-}
-
-.custom-section {
-    margin-top: 20px;
-    text-align: center;
-}
-
-input {
+  .controls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
     padding: 10px;
-    margin: 10px;
-    font-size: 16px;
-    background: var(--absent);
-    border: 1px solid var(--text);
-    color: var(--text);
-}
+    border-radius: 5px;
+    color: white;
+  }
 
-.custom-section input {
-    width: 80%;
-    padding: 15px;
-    margin: 15px auto;
-    font-size: 18px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    color: var(--text);
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
+  .game-over {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 24px;
+    z-index: 1000;
+  }
 
-.custom-section input:focus {
-    outline: none;
-    border-color: var(--correct);
-    background: rgba(255, 255, 255, 0.15);
-}
+  .health-bar-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 200px;
+    height: 20px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 10px;
+  }
 
-button {
-    padding: 10px 20px;
-    background: var(--correct);
-    border: none;
-    color: var(--text);
-    cursor: pointer;
-    border-radius: 4px;
-}
+  .health-bar {
+    width: 100%;
+    height: 100%;
+    background: #2ecc71;
+    border-radius: 10px;
+    transition: width 0.3s;
+  }
 
-.custom-section button {
-    background: linear-gradient(45deg, var(--correct), #6aaf67);
+  .enemy-health {
+    position: absolute;
+    width: 50px;
+    height: 5px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 3px;
+    top: -10px;
+    left: 25px;
+  }
+
+  .enemy-health-inner {
+    width: 100%;
+    height: 100%;
+    background: #e74c3c;
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+
+  .restart-button {
+    display: none;
+    position: fixed;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     padding: 15px 30px;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 20px;
+    background: #4CAF50;
+    color: white;
+    border: none;
     border-radius: 8px;
-    transition: transform 0.2s ease;
-    margin: 15px 0;
-}
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.2s;
+  }
 
-.custom-section button:hover {
-    transform: translateY(-2px);
-}
+  .restart-button:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
 
-.message {
-    margin-top: 20px;
-    font-size: 1.2rem;
-    min-height: 30px;
-    padding: 10px;
-    border-radius: 4px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
+  .upgrade-menu {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.9);
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 2000;
+    color: white;
+    min-width: 300px;
+  }
 
-.message.show {
-    opacity: 1;
-    background-color: rgba(255, 0, 0, 0.2);
-}
+  .upgrade-option {
+    margin: 10px 0;
+    padding: 15px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .upgrade-option:hover {
+    background: rgba(255,255,255,0.2);
+  }
+
+  .spinning-triangle {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 40px solid cyan;
+    transform-origin: 50% 100px;
+    pointer-events: none;
+  }
+
+  .score {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 24px;
+    z-index: 100;
+  }
+
+  .powerup {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .health-pickup {
+    background: #2ecc71;
+  }
+
+  .damage-boost {
+    background: #e74c3c;
+  }
+
+  @keyframes fadeOut {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
 </style>
 </head>
 <body>
-<h1>Mega Wordle</h1>
-<div class="game-container">
-    <div class="grid" id="grid"></div>
-    <div class="keyboard" id="keyboard"></div>
-    <div class="message" id="message"></div>
+
+<div class="overlay">
+  <button class="start-button">Click to Start!</button>
 </div>
 
-<div class="modal-overlay" id="gameEndModal">
-    <div class="modal">
-        <h2 id="modalTitle"></h2>
-        <div class="modal-content">
-            <p id="wordReveal"></p>
-            <div class="stats">
-                <div class="stat-item" id="timeTaken"></div>
-                <div class="stat-item" id="avgTime"></div>
-                <div class="stat-item" id="percentile"></div>
-                <div class="stat-item" id="guessCount"></div>
-            </div>
-        </div>
-        <button class="modal-button" onclick="closeModal()">OK</button>
-    </div>
+<div class="game-over">GAME OVER!</div>
+<button class="restart-button">Restart Game</button>
+
+<div class="health-bar-container">
+  <div class="health-bar"></div>
 </div>
 
-<div class="custom-section">
-    <input type="text" id="customWord" maxlength="5" placeholder="Enter any 5-letter word">
-    <button onclick="createCustomGame()">Create Game</button>
-    <div id="customLink"></div>
+<div class="player">
+  <img src="Screenshot 2024-11-27 141045.png" alt="Player">
 </div>
+
+<button class="click-me">Click Me!</button>
+
+<div class="controls">
+  Use WASD to move | Click to shoot
+</div>
+
+<div class="score">Score: <span id="scoreValue">0</span></div>
+
+<div class="upgrade-menu">
+  <h2>Choose an Upgrade!</h2>
+  <div class="upgrade-option" data-upgrade="spinningTriangles">
+    Spinning Triangles: Creates 2 protective triangles
+  </div>
+  <div class="upgrade-option" data-upgrade="damageBoost">
+    Damage Boost: Increases bullet damage by 50%
+  </div>
+  <div class="upgrade-option" data-upgrade="rapidFire">
+    Rapid Fire: Shoot faster!
+  </div>
+</div>
+
+<audio id="doneSound" src="done.mp3"></audio>
+<audio id="attackSound" src="hawk-tuah-short.mp3"></audio>
 
 <script>
-const WORD_LIST = ["about", "above", "abuse", "actor", "acute", "admit", "adopt", "adult", "after", "again", "agent", "agree", "ahead", "alarm", "album", "alert", "alike", "alive", "allow", "alone", "along", "alter", "among", "anger", "angle", "angry", "apart", "apple", "apply", "arena", "argue", "arise", "array", "aside", "asset", "audio", "audit", "avoid", "award", "aware", "badly", "baker", "bases", "basic", "basis", "beach", "beast", "began", "begin", "begun", "being", "belly", "below", "bench", "billy", "birth", "black", "blame", "blast", "blaze", "blend", "blind", "block", "blood", "board", "boost", "booth", "bound", "brain", "brake", "brand", "brass", "brave", "bread", "break", "breed", "brick", "brief", "bring", "brisk", "broad", "broke", "brown", "brush", "build", "built", "bunch", "buyer", "cable", "calif", "carry", "catch", "cause", "chain", "chair", "chalk", "charm", "chart", "chase", "cheap", "check", "chest", "chief", "child", "chill", "china", "chord", "chose", "civil", "claim", "clamp", "clash", "class", "clean", "clear", "clock", "close", "cloth", "cloud", "coach", "coast", "color", "could", "count", "court", "cover", "craft", "crash", "cream", "creek", "crest", "crime", "cross", "crowd", "crown", "crush", "curve", "cycle", "daily", "dance", "dated", "dealt", "death", "debut", "delay", "depth", "doing", "doubt", "dozen", "draft", "drain", "drama", "drawn", "dream", "dress", "dried", "drift", "drill", "drink", "drive", "drove", "dying", "eager", "early", "earth", "eight", "elite", "empty", "enemy", "enjoy", "enter", "entry", "equal", "error", "event", "every", "exact", "exist", "extra", "faith", "false", "fault", "fiber", "field", "fifth", "fifty", "fight", "final", "first", "fixed", "fizzy", "flake", "flame", "flash", "fleet", "flesh", "float", "flock", "floor", "flour", "fluid", "flush", "focus", "force", "forge", "forth", "forty", "forum", "found", "frame", "frank", "fraud", "fresh", "front", "frost", "fruit", "fully", "funny", "giant", "given", "glass", "globe", "glory", "going", "grace", "grade", "grain", "grand", "grant", "grape", "grass", "grave", "great", "green", "grind", "groan", "gross", "group", "grown", "guard", "guess", "guest", "guide", "happy", "harry", "heart", "heath", "heavy", "hedge", "hello", "hence", "henry", "horse", "hotel", "house", "hover", "human", "humid", "humor", "hurry", "ideal", "image", "index", "inner", "input", "issue", "ivory", "japan", "jimmy", "joint", "jones", "judge", "juice", "known", "label", "large", "laser", "later", "laugh", "layer", "learn", "lease", "least", "leave", "legal", "lemon", "level", "lewis", "light", "limit", "links", "liver", "lives", "local", "logic", "loose", "lower", "lucky", "lunch", "lying", "magic", "major", "maker", "maple", "march", "maria", "match", "maybe", "mayor", "meant", "media", "medal", "metal", "might", "minor", "minus", "mixed", "model", "moist", "money", "month", "moral", "motor", "mount", "mouse", "mouth", "movie", "music", "naive", "needs", "nerve", "never", "newly", "night", "noble", "noise", "north", "noted", "novel", "nurse", "occur", "ocean", "offer", "often", "onion", "order", "other", "ought", "paint", "panel", "paper", "party", "paste", "patch", "pause", "peace", "peach", "pearl", "pedal", "peter", "phase", "phone", "photo", "piano", "piece", "pilot", "pinch", "pitch", "place", "plain", "plane", "plant", "plate", "plaza", "point", "pound", "power", "press", "price", "pride", "prime", "print", "prior", "prize", "probe", "proof", "proud", "prove", "pulse", "punch", "pupil", "queen", "quick", "quiet", "quite", "radar", "radio", "raise", "range", "rapid", "ratio", "reach", "ready", "realm", "rebel", "refer", "reign", "relax", "relay", "right", "rival", "river", "robin", "robot", "roger", "roman", "rough", "round", "royal", "rural", "scale", "scene", "scope", "score", "scout", "scrap", "sense", "serve", "seven", "shade", "shaft", "shake", "shall", "shame", "shape", "share", "shark", "sharp", "sheep", "sheer", "sheet", "shelf", "shell", "shift", "shine", "shirt", "shock", "shoot", "shore", "short", "shown", "sight", "since", "sixth", "sixty", "sized", "skill", "skirt", "skull", "slate", "sleep", "slide", "slime", "slope", "small", "smart", "smile", "smith", "smoke", "snack", "snake", "sneak", "solid", "solve", "sorry", "sound", "south", "space", "spare", "spark", "speak", "speed", "spell", "spend", "spent", "spice", "spine", "split", "spoil", "spoke", "spoon", "sport", "spray", "stack", "staff", "stage", "stake", "stall", "stamp", "stand", "stare", "start", "state", "steam", "steel", "steep", "steer", "stick", "still", "stock", "stone", "stood", "store", "storm", "story", "strap", "straw", "strip", "stuck", "study", "stuff", "style", "sugar", "suite", "super", "surge", "sweet", "swing", "sword", "table", "taken", "taste", "taxes", "teach", "teeth", "terry", "texas", "thank", "theft", "their", "theme", "there", "these", "thick", "thief", "thing", "think", "third", "those", "three", "threw", "throw", "thumb", "tight", "timer", "times", "tired", "title", "toast", "today", "topic", "torch", "total", "touch", "tough", "tower", "trace", "track", "trade", "trail", "train", "trash", "treat", "trend", "trial", "tribe", "trick", "tried", "tries", "truck", "truly", "trunk", "trust", "truth", "twice", "twist", "typed", "under", "undue", "union", "unity", "until", "upper", "upset", "urban", "usage", "usual", "valid", "value", "vapor", "vault", "venue", "video", "virus", "visit", "vital", "voice", "voter", "waste", "watch", "water", "wayne", "weeks", "whale", "wheat", "wheel", "where", "which", "while", "white", "whole", "whose", "woman", "women", "world", "worry", "worse", "worst", "worth", "would", "wound", "wrist", "write", "wrong", "wrote", "yacht", "yield", "young", "youth", "zebra"];
+const overlay = document.querySelector('.overlay');
+const startButton = document.querySelector('.start-button');
+const player = document.querySelector('.player');
+const clickMe = document.querySelector('.click-me');
+const doneSound = document.getElementById('doneSound');
+const attackSound = document.getElementById('attackSound');
+const gameOver = document.querySelector('.game-over');
+const healthBar = document.querySelector('.health-bar');
+const restartButton = document.querySelector('.restart-button');
+const scoreValue = document.getElementById('scoreValue');
+const upgradeMenu = document.querySelector('.upgrade-menu');
 
-let currentWord;
-let guessesRemaining = 6;
-let currentGuess = [];
-let nextLetter = 0;
-let gameActive = true;
-let startTime = Date.now();
-let gameStats = {
-    avgTime: 120000, // 2 minutes average (mock data)
-    totalGames: 1000 // mock data for percentile calculation
-};
+let playerX = window.innerWidth / 2;
+let playerY = window.innerHeight / 2;
+let mouseX = 0;
+let mouseY = 0;
+const speed = 5;
+const enemySpeed = 2;
+const bulletSpeed = 10;
+const keys = {};
+let gameStarted = false;
+let bullets = [];
+let enemies = [];
+let playerHealth = 200;
+let spawnInterval;
+let score = 0;
+let upgradePoints = 0;
+let damageMultiplier = 1;
+let fireRateMultiplier = 1;
+let spinningTrianglesActive = false;
+let triangles = [];
+let powerups = [];
+let lastFireTime = 0;
 
-// Initialize game board
-function initializeBoard() {
-    const grid = document.getElementById("grid");
-    for (let i = 0; i < 6; i++) {
-        const row = document.createElement("div");
-        row.className = "row";
-        for (let j = 0; j < 5; j++) {
-            const tile = document.createElement("div");
-            tile.className = "tile";
-            tile.id = `tile-${i}-${j}`;
-            row.appendChild(tile);
-        }
-        grid.appendChild(row);
-    }
-}
+let killCounter = 0;
+let rapidFireUnlocked = false;
+let damageUpgradeUnlocked = false;
 
-// Initialize keyboard
-function initializeKeyboard() {
-    const keyboard = document.getElementById("keyboard");
-    const keys = [
-        ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-        ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-        ["Enter", "Z", "X", "C", "V", "B", "N", "M", "⌫"]
-    ];
-
-    keys.forEach(row => {
-        const keyboardRow = document.createElement("div");
-        keyboardRow.className = "keyboard-row";
-        row.forEach(key => {
-            const buttonElement = document.createElement("button");
-            buttonElement.textContent = key;
-            buttonElement.className = "key";
-            buttonElement.onclick = () => handleKeyPress(key);
-            keyboardRow.appendChild(buttonElement);
-        });
-        keyboard.appendChild(keyboardRow);
-    });
-}
-
-// Handle key press
-function handleKeyPress(key) {
-    if (!gameActive) return;
-
-    if (key === "⌫") {
-        deleteLetter();
-        return;
-    }
-
-    if (key === "Enter") {
-        checkGuess();
-        return;
-    }
-
-    if (currentGuess.length < 5) {
-        addLetter(key);
-    }
-}
-
-function addLetter(letter) {
-    if (currentGuess.length >= 5) return;
-    
-    currentGuess.push(letter);
-    let tile = document.getElementById(`tile-${6-guessesRemaining}-${nextLetter}`);
-    tile.textContent = letter;
-    nextLetter++;
-}
-
-function deleteLetter() {
-    if (nextLetter <= 0) return;
-    
-    nextLetter--;
-    currentGuess.pop();
-    let tile = document.getElementById(`tile-${6-guessesRemaining}-${nextLetter}`);
-    tile.textContent = "";
-}
-
-function checkGuess() {
-    if (currentGuess.length !== 5) {
-        showMessage("Not enough letters!");
-        return;
-    }
-
-    const guess = currentGuess.join("").toLowerCase();
-    const urlParams = new URLSearchParams(window.location.search);
-    const isCustomGame = urlParams.has('w');
-    
-    // Only check word list if it's NOT a custom game
-    if (!isCustomGame && !WORD_LIST.includes(guess) && guess !== currentWord) {
-        showMessage("Word not in list!");
-        let rowIndex = 6-guessesRemaining;
-        for (let i = 0; i < 5; i++) {
-            let tile = document.getElementById(`tile-${rowIndex}-${i}`);
-            tile.classList.add("shake");
-        }
-        setTimeout(() => {
-            for (let i = 0; i < 5; i++) {
-                let tile = document.getElementById(`tile-${rowIndex}-${i}`);
-                tile.classList.remove("shake");
-            }
-        }, 500);
-        return;
-    }
-
-    let checkArray = new Array(5).fill("absent");
-    let letterCount = {};
-    
-    // Count letters in current word
-    for (let i = 0; i < currentWord.length; i++) {
-        letterCount[currentWord[i]] = (letterCount[currentWord[i]] || 0) + 1;
-    }
-
-    // Check for correct positions first
-    for (let i = 0; i < 5; i++) {
-        if (guess[i] === currentWord[i]) {
-            checkArray[i] = "correct";
-            letterCount[guess[i]]--;
-        }
-    }
-
-    // Check for present letters
-    for (let i = 0; i < 5; i++) {
-        if (checkArray[i] !== "correct" && letterCount[guess[i]] > 0) {
-            checkArray[i] = "present";
-            letterCount[guess[i]]--;
-        }
-    }
-
-    // Animate tiles
-    for (let i = 0; i < 5; i++) {
-        let tile = document.getElementById(`tile-${6-guessesRemaining}-${i}`);
-        setTimeout(() => {
-            tile.classList.add("reveal");
-            tile.classList.add(checkArray[i]);
-        }, i * 200);
-    }
-
-    if (guess === currentWord) {
-        showGameEndModal(true);
-        gameActive = false;
-        return;
-    }
-
-    guessesRemaining--;
-    currentGuess = [];
-    nextLetter = 0;
-
-    if (guessesRemaining === 0) {
-        showGameEndModal(false);
-        gameActive = false;
-    }
-}
-
-function showMessage(msg) {
-    const messageElement = document.getElementById("message");
-    messageElement.textContent = msg;
-    messageElement.classList.add('show');
-    
-    if (msg === "Word not in list!") {
-        document.body.classList.add('shake');
-        setTimeout(() => {
-            document.body.classList.remove('shake');
-        }, 500);
-    }
-    
-    setTimeout(() => {
-        messageElement.classList.remove('show');
-        setTimeout(() => {
-            messageElement.textContent = "";
-        }, 300);
-    }, 5000);
-}
-
-function createCustomGame() {
-    const customWord = document.getElementById("customWord").value.toLowerCase();
-    if (customWord.length !== 5) {
-        showMessage("Word must be exactly 5 letters!");
-        return;
-    }
-    
-    // Create a more complex encoding with random salt
-    const salt = Math.random().toString(36).substring(2, 15);
-    const encodedWord = btoa(customWord + '|' + salt); // Add salt to make URLs unique
-    const gameUrl = `${window.location.origin}${window.location.pathname}?w=${encodedWord}`;
-    
-    const linkDiv = document.getElementById("customLink");
-    linkDiv.innerHTML = `
-        <p>Share this link for your custom game:</p>
-        <input type="text" value="${gameUrl}" readonly>`;
-}
-
-// Start game
-function createConfetti() {
-    for (let i = 0; i < 50; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * 100 + 'vw';
-        confetti.style.animationDelay = Math.random() * 2 + 's';
-        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 50%, 50%)`;
-        document.body.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 3000);
-    }
-}
-
-function showGameEndModal(won) {
-    const timeTaken = Date.now() - startTime;
-    const modal = document.getElementById('gameEndModal');
-    const title = document.getElementById('modalTitle');
-    const wordReveal = document.getElementById('wordReveal');
-    
-    title.textContent = won ? "You've Won! 🎉" : "Game Over";
-    wordReveal.textContent = `The word was: ${currentWord.toUpperCase()}`;
-    
-    document.getElementById('timeTaken').textContent = `Time: ${Math.floor(timeTaken/1000)} seconds`;
-    document.getElementById('avgTime').textContent = `Average time: ${Math.floor(gameStats.avgTime/1000)} seconds`;
-    document.getElementById('percentile').textContent = `You're in the ${calculatePercentile(timeTaken)}th percentile`;
-    document.getElementById('guessCount').textContent = `Guesses: ${6 - guessesRemaining + 1}`;
-    
-    modal.style.display = 'flex';
-    
-    if (won) {
-        createConfetti();
-    }
-}
-
-function closeModal() {
-    document.getElementById('gameEndModal').style.display = 'none';
-}
-
-function calculatePercentile(time) {
-    // Mock calculation - would normally use real stats
-    return Math.floor((gameStats.avgTime - time) / gameStats.avgTime * 100);
-}
-
-function startGame() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('w')) {
-        try {
-            const decoded = atob(urlParams.get('w')).split('|')[0]; // Extract word, ignore salt
-            currentWord = decoded.toLowerCase();
-        } catch(e) {
-            currentWord = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
-        }
+class Enemy {
+  constructor() {
+    this.element = document.createElement('div');
+    this.element.className = 'enemy';
+    this.element.innerHTML = `
+      <img src="Screenshot 2024-11-27 141045.png" alt="Enemy">
+      <div class="enemy-health">
+        <div class="enemy-health-inner"></div>
+      </div>
+    `;
+    this.health = 5;
+    if (Math.random() < 0.5) {
+      this.x = Math.random() < 0.5 ? -50 : window.innerWidth + 50;
+      this.y = Math.random() * window.innerHeight;
     } else {
-        currentWord = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+      this.x = Math.random() * window.innerWidth;
+      this.y = Math.random() < 0.5 ? -50 : window.innerHeight + 50;
+    }
+    document.body.appendChild(this.element);
+    this.healthBar = this.element.querySelector('.enemy-health-inner');
+  }
+
+  update() {
+    const dx = playerX - this.x;
+    const dy = playerY - this.y;
+    const angle = Math.atan2(dy, dx);
+    
+    this.x += Math.cos(angle) * enemySpeed;
+    this.y += Math.sin(angle) * enemySpeed;
+    
+    this.element.style.left = (this.x - 50) + 'px';
+    this.element.style.top = (this.y - 50) + 'px';
+    
+    this.healthBar.style.width = (this.health / 5 * 100) + '%';
+  }
+
+  checkCollision(playerX, playerY) {
+    const dx = this.x - playerX;
+    const dy = this.y - playerY;
+    return Math.sqrt(dx * dx + dy * dy) < 100;
+  }
+
+  die() {
+    score += 10;
+    killCounter++;
+    upgradePoints++;
+    scoreValue.textContent = score;
+    
+    // Check for kill-based upgrades
+    if (killCounter === 2 && !rapidFireUnlocked) {
+      rapidFireUnlocked = true;
+      fireRateMultiplier *= 1.5;
+      showNotification('Rapid Fire Unlocked!');
+    }
+    if (killCounter === 5 && !damageUpgradeUnlocked) {
+      damageUpgradeUnlocked = true;
+      damageMultiplier += 10;
+      showNotification('Damage Boost Unlocked!');
     }
     
-    initializeBoard();
-    initializeKeyboard();
-    
-    document.addEventListener("keyup", (e) => {
-        if (!gameActive) return;
-        
-        if (e.key === "Enter") {
-            handleKeyPress("Enter");
-        } else if (e.key === "Backspace") {
-            handleKeyPress("⌫");
-        } else if (e.key.match(/^[a-zA-Z]$/)) {
-            handleKeyPress(e.key.toUpperCase());
-        }
-    });
+    if (upgradePoints >= 5) {
+      showUpgradeMenu();
+      upgradePoints = 0;
+    }
+    if (Math.random() < 0.2) {
+      spawnPowerup(this.x, this.y);
+    }
+  }
 }
 
-startGame();
+function showNotification(message) {
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,255,0,0.8);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 20px;
+    z-index: 1000;
+    animation: fadeOut 2s forwards;
+  `;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.remove();
+  }, 2000);
+}
+
+function spawnEnemies() {
+  for(let i = 0; i < 10; i++) {
+    enemies.push(new Enemy());
+  }
+}
+
+function resetGame() {
+  enemies.forEach(enemy => enemy.element.remove());
+  enemies = [];
+  
+  bullets.forEach(bullet => bullet.element.remove());
+  bullets = [];
+  
+  playerX = window.innerWidth / 2;
+  playerY = window.innerHeight / 2;
+  player.style.left = (playerX - 50) + 'px';
+  player.style.top = (playerY - 50) + 'px';
+  
+  playerHealth = 200;
+  healthBar.style.width = '100%';
+  
+  gameOver.style.display = 'none';
+  restartButton.style.display = 'none';
+  
+  score = 0;
+  scoreValue.textContent = score;
+  killCounter = 0;
+  rapidFireUnlocked = false;
+  damageUpgradeUnlocked = false;
+  damageMultiplier = 1;
+  fireRateMultiplier = 1;
+  
+  triangles.forEach(t => t.element.remove());
+  triangles = [];
+  powerups.forEach(p => p.element.remove());
+  powerups = [];
+  
+  gameStarted = true;
+  spawnEnemies();
+  clearInterval(spawnInterval);
+  spawnInterval = setInterval(spawnEnemies, 10000);
+  updateGame();
+}
+
+startButton.addEventListener('click', () => {
+  overlay.style.display = 'none';
+  doneSound.play();
+  gameStarted = true;
+  spawnEnemies();
+  spawnInterval = setInterval(spawnEnemies, 10000);
+  updateGame();
+});
+
+restartButton.addEventListener('click', resetGame);
+
+clickMe.addEventListener('click', () => {
+  doneSound.play();
+});
+
+window.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+window.addEventListener('click', (e) => {
+  if (!gameStarted) return;
+  shootBullet();
+});
+
+window.addEventListener('keydown', (e) => {
+  if (!gameStarted) return;
+  keys[e.key.toLowerCase()] = true;
+});
+
+window.addEventListener('keyup', (e) => {
+  keys[e.key.toLowerCase()] = false;
+});
+
+function shootBullet() {
+  const currentTime = Date.now();
+  if (currentTime - lastFireTime < 250 / fireRateMultiplier) return;
+  
+  lastFireTime = currentTime;
+  attackSound.currentTime = 0;
+  attackSound.play();
+  
+  const dx = mouseX - playerX;
+  const dy = mouseY - playerY;
+  const angle = Math.atan2(dy, dx);
+  
+  const bullet = document.createElement('div');
+  bullet.className = 'bullet';
+  bullet.style.left = playerX + 'px';
+  bullet.style.top = playerY + 'px';
+  document.body.appendChild(bullet);
+  
+  bullets.push({
+    element: bullet,
+    x: playerX,
+    y: playerY,
+    dx: Math.cos(angle) * bulletSpeed,
+    dy: Math.sin(angle) * bulletSpeed,
+    damage: 1 * damageMultiplier
+  });
+}
+
+function updateBullets() {
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    const bullet = bullets[i];
+    bullet.x += bullet.dx;
+    bullet.y += bullet.dy;
+    
+    if (bullet.x < 0 || bullet.x > window.innerWidth || 
+        bullet.y < 0 || bullet.y > window.innerHeight) {
+      bullet.element.remove();
+      bullets.splice(i, 1);
+      continue;
+    }
+    
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      const enemy = enemies[j];
+      const dx = bullet.x - enemy.x;
+      const dy = bullet.y - enemy.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < 50) {
+        enemy.health -= 1 * damageMultiplier;
+        if (enemy.health <= 0) {
+          enemy.die();
+          enemy.element.remove();
+          enemies.splice(j, 1);
+        }
+        bullet.element.remove();
+        bullets.splice(i, 1);
+        break;
+      }
+    }
+
+    if (bullets[i]) {
+      bullet.element.style.left = bullet.x + 'px';
+      bullet.element.style.top = bullet.y + 'px';
+    }
+  }
+}
+
+function checkCollisions() {
+  for (let enemy of enemies) {
+    if (enemy.checkCollision(playerX, playerY)) {
+      playerHealth -= 0.5;
+      healthBar.style.width = (playerHealth / 200 * 100) + '%';
+      
+      if (playerHealth <= 0) {
+        gameOver.style.display = 'block';
+        restartButton.style.display = 'block';
+        gameStarted = false;
+        clearInterval(spawnInterval);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function spawnPowerup(x, y) {
+  const type = Math.random() < 0.5 ? 'health' : 'damage';
+  const powerup = document.createElement('div');
+  powerup.className = `powerup ${type}-pickup`;
+  powerup.style.left = x + 'px';
+  powerup.style.top = y + 'px';
+  document.body.appendChild(powerup);
+  powerups.push({ element: powerup, x, y, type });
+}
+
+function checkPowerupCollisions() {
+  for (let i = powerups.length - 1; i >= 0; i--) {
+    const powerup = powerups[i];
+    const dx = powerup.x - playerX;
+    const dy = powerup.y - playerY;
+    if (Math.sqrt(dx * dx + dy * dy) < 50) {
+      if (powerup.type === 'health') {
+        playerHealth = Math.min(200, playerHealth + 50);
+        healthBar.style.width = (playerHealth / 200 * 100) + '%';
+      } else if (powerup.type === 'damage') {
+        damageMultiplier = 2;
+        setTimeout(() => damageMultiplier = 1, 10000);
+      }
+      powerup.element.remove();
+      powerups.splice(i, 1);
+    }
+  }
+}
+
+function showUpgradeMenu() {
+  upgradeMenu.style.display = 'block';
+  gameStarted = false;
+}
+
+function createSpinningTriangles() {
+  if (triangles.length > 0) return;
+  
+  for (let i = 0; i < 2; i++) {
+    const triangle = document.createElement('div');
+    triangle.className = 'spinning-triangle';
+    document.body.appendChild(triangle);
+    triangles.push({
+      element: triangle,
+      angle: i * Math.PI
+    });
+  }
+}
+
+function updateSpinningTriangles() {
+  triangles.forEach((triangle, i) => {
+    triangle.angle += 0.05;
+    const x = playerX + Math.cos(triangle.angle) * 100;
+    const y = playerY + Math.sin(triangle.angle) * 100;
+    triangle.element.style.left = (x - 20) + 'px';
+    triangle.element.style.top = (y - 20) + 'px';
+    triangle.element.style.transform = `rotate(${triangle.angle * 57.3}deg)`;
+
+    enemies.forEach((enemy, j) => {
+      const dx = x - enemy.x;
+      const dy = y - enemy.y;
+      if (Math.sqrt(dx * dx + dy * dy) < 50) {
+        enemy.health -= 0.1;
+        if (enemy.health <= 0) {
+          enemy.die();
+          enemy.element.remove();
+          enemies.splice(j, 1);
+        }
+      }
+    });
+  });
+}
+
+document.querySelectorAll('.upgrade-option').forEach(option => {
+  option.addEventListener('click', () => {
+    const upgrade = option.dataset.upgrade;
+    switch(upgrade) {
+      case 'spinningTriangles':
+        createSpinningTriangles();
+        break;
+      case 'damageBoost':
+        damageMultiplier *= 1.5;
+        break;
+      case 'rapidFire':
+        fireRateMultiplier *= 1.5;
+        break;
+    }
+    upgradeMenu.style.display = 'none';
+    gameStarted = true;
+  });
+});
+
+function updateGame() {
+  if (!gameStarted) return;
+
+  if (keys['w']) playerY -= speed;
+  if (keys['s']) playerY += speed;
+  if (keys['a']) playerX -= speed;
+  if (keys['d']) playerX += speed;
+  
+  playerX = Math.max(50, Math.min(window.innerWidth - 50, playerX));
+  playerY = Math.max(50, Math.min(window.innerHeight - 50, playerY));
+  
+  player.style.left = (playerX - 50) + 'px';
+  player.style.top = (playerY - 50) + 'px';
+  
+  enemies.forEach(enemy => enemy.update());
+  updateBullets();
+  checkPowerupCollisions();
+
+  if (spinningTrianglesActive) {
+    updateSpinningTriangles();
+  }
+
+  if (!checkCollisions()) {
+    requestAnimationFrame(updateGame);
+  }
+}
+
+// Loop background music
+if (attackSound.ended) {
+  attackSound.play();
+}
 </script>
 </body></html>
